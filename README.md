@@ -21,7 +21,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
             - Created by [create-or-update-comment][1]
 
             [1]: https://github.com/peter-evans/create-or-update-comment
-          reaction-type: +1
+          reaction-type: '+1'
 ```
 
 ### Update a comment
