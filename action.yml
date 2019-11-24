@@ -5,9 +5,9 @@ inputs:
     description: 'A GitHub access token.'
     required: true
   repository:
-    description: 'The full name of the repository to create or update a comment.'
+    description: 'The full name of the repository in which to create or update a comment.'
   issue-number:
-    description: 'The number of the issue in which to create a comment.'
+    description: 'The number of the issue or pull request in which to create a comment.'
   comment-id:
     description: 'The id of the comment to update.'
   body:
