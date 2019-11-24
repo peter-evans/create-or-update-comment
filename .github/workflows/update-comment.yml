@@ -1,0 +1,31 @@
+name: Update Comment
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  updateComment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      # For debugging purposes. Remove this in production.
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Update comment
+        uses: ./
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            **Edit:** Some additional info
+          reaction-type: eyes
+
+      - name: Add reaction
+        uses: ./
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ github.event.comment.id }}
+          reaction-type: heart
