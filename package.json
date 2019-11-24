@@ -1,0 +1,31 @@
+{
+  "name": "create-or-update-comment",
+  "version": "1.0.0",
+  "description": "Create or update an issue or pull request comment",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint index.js",
+    "package": "ncc build index.js -o dist",
+    "test": "eslint index.js && jest --passWithNoTests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peter-evans/create-or-update-comment.git"
+  },
+  "keywords": [],
+  "author": "Peter Evans",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/peter-evans/create-or-update-comment/issues"
+  },
+  "homepage": "https://github.com/peter-evans/create-or-update-comment#readme",
+  "dependencies": {
+    "@actions/core": "^1.1.1",
+    "@actions/github": "^1.1.0"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.20.5",
+    "eslint": "^6.3.0",
+    "jest": "^24.9.0"
+  }
+}
