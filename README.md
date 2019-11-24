@@ -59,6 +59,27 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `reaction-type` | The reaction to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 
+### Where to find the id of a comment
+
+How to find the id of a comment will depend a lot on the use case.
+Here is one example where the id can be found in the `github` context during an `issue_comment` event.
+
+```yml
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  commentCreated:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add reaction
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ github.event.comment.id }}
+          reaction-type: eyes
+```
+
 ### Accessing issues and comments in other repositories
 
 You can create and update comments in another repository by using a [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) instead of `GITHUB_TOKEN`.
