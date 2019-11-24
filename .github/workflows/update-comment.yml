@@ -5,7 +5,6 @@ on:
 jobs:
   updateComment:
     runs-on: ubuntu-latest
-    if: github.event.issue.number == 2
     steps:
       - uses: actions/checkout@v1
 
@@ -16,6 +15,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Update comment
+        if: github.event.issue.number == 2
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,6 +25,7 @@ jobs:
           reaction-type: eyes
 
       - name: Add reaction
+        if: github.event.issue.number == 2
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
