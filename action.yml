@@ -2,7 +2,7 @@ name: 'Create or Update Comment'
 description: 'Create or update an issue or pull request comment'
 inputs:
   token:
-    description: 'A GitHub access token.'
+    description: 'GITHUB_TOKEN or a repo scoped PAT.'
     required: true
   repository:
     description: 'The full name of the repository in which to create or update a comment.'
