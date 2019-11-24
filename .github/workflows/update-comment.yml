@@ -5,6 +5,7 @@ on:
 jobs:
   updateComment:
     runs-on: ubuntu-latest
+    if: github.event.issue.number == 2
     steps:
       - uses: actions/checkout@v1
 
