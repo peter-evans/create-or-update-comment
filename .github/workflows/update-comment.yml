@@ -15,7 +15,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Update comment
-        if: github.event.issue.number == 2
+        if: github.event.issue.number == 1
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,7 +25,7 @@ jobs:
           reaction-type: eyes
 
       - name: Add reaction
-        if: github.event.issue.number == 2
+        if: github.event.issue.number == 1
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
