@@ -24,8 +24,8 @@
     "@actions/github": "^2.0.0"
   },
   "devDependencies": {
-    "@zeit/ncc": "^0.20.5",
-    "eslint": "^6.3.0",
-    "jest": "^24.9.0"
+    "@zeit/ncc": "0.20.5",
+    "eslint": "6.7.0",
+    "jest": "24.9.0"
   }
 }
