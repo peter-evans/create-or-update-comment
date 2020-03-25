@@ -16,6 +16,17 @@ inputs:
     description: 'The mode when updating a comment, "replace" or "append".'
   reaction-type:
     description: 'The reaction to add to the comment.'
+outputs:
+  repository:
+    description: 'The full name of the repository in which comment was created'
+  issue-number:
+    description: 'The number of the issue or pull request in which comment was created'
+  comment-id:
+    description: 'The id of the comment created'
+  body:
+    description: 'The comment body of the comment created'
+  reaction-type:
+    description: 'The reaction added to the comment created'
 runs:
   using: 'node12'
   main: 'dist/index.js'

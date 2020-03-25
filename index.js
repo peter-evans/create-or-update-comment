@@ -69,6 +69,11 @@ async function run() {
         body: inputs.body
       });
       core.info(`Created comment on issue '${inputs.issueNumber}'.`);
+      core.setOutput('comment-id', comment.id);
+      core.setOutput('issue-number', inputs.issueNumber);
+      core.setOutput('reaction-type', inputs.reactionType);
+      core.setOutput('repository', repository);
+      core.setOutput('body', inputs.body);
 
       // Set a comment reaction
       if (inputs.reactionType) {
@@ -102,6 +107,11 @@ async function run() {
           body: commentBody
         });
         core.info(`Updated comment id '${inputs.commentId}'.`);
+        core.setOutput('comment-id', inputs.commentId);
+        core.setOutput('issue-number', inputs.issueNumber);
+        core.setOutput('reaction-type', inputs.reactionType);
+        core.setOutput('repository', repository);
+        core.setOutput('body', commentBody);
       }
 
       // Set a comment reaction
