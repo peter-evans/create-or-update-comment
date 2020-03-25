@@ -68,7 +68,7 @@ async function run() {
         issue_number: inputs.issueNumber,
         body: inputs.body
       });
-      core.info(`Created comment on issue '${inputs.issueNumber}'.`);
+      core.info(`Created comment id ${comment.id} on issue '${inputs.issueNumber}'.`);
       core.setOutput('comment-id', comment.id);
       core.setOutput('issue-number', inputs.issueNumber);
       core.setOutput('reaction-type', inputs.reactionType);
@@ -77,6 +77,7 @@ async function run() {
 
       // Set a comment reaction
       if (inputs.reactionType) {
+        core.info(`Added reaction ${inputs.reactionType} comment id '${comment.id}' on issue '${inputs.issueNumber}.`);
         await addReaction(octokit, repo, comment.id, inputs.reactionType);
       }
     } else if (inputs.commentId) {
@@ -116,6 +117,7 @@ async function run() {
 
       // Set a comment reaction
       if (inputs.reactionType) {
+        core.info(`Added reaction ${inputs.reactionType} comment id '${inputs.commentId}'.`);
         await addReaction(octokit, repo, inputs.commentId, inputs.reactionType);
       }
     } else {
