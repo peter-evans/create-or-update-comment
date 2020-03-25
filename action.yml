@@ -6,16 +6,23 @@ inputs:
     required: true
   repository:
     description: 'The full name of the repository in which to create or update a comment.'
+    required: false
   issue-number:
     description: 'The number of the issue or pull request in which to create a comment.'
+    required: false
   comment-id:
     description: 'The id of the comment to update.'
+    required: false
   body:
     description: 'The comment body.'
+    required: false
   edit-mode:
     description: 'The mode when updating a comment, "replace" or "append".'
+    default: 'append'
+    required: false
   reaction-type:
     description: 'The reaction to add to the comment.'
+    required: false
 outputs:
   repository:
     description: 'The full name of the repository in which comment was created'
