@@ -55,26 +55,8 @@ async function run() {
     }
 
     const octokit = new github.GitHub(inputs.token);
-
-    if (inputs.issueNumber) {
-      // Create a comment
-      if (!inputs.body) {
-        core.setFailed("Missing comment 'body'.");
-        return;
-      }
-      const { data: comment } = await octokit.issues.createComment({
-        owner: repo[0],
-        repo: repo[1],
-        issue_number: inputs.issueNumber,
-        body: inputs.body
-      });
-      core.info(`Created comment on issue '${inputs.issueNumber}'.`);
-
-      // Set a comment reaction
-      if (inputs.reactionType) {
-        await addReaction(octokit, repo, comment.id, inputs.reactionType);
-      }
-    } else if (inputs.commentId) {
+    
+    if (inputs.commentId) {
       // Edit a comment
       if (!inputs.body && !inputs.reactionType) {
         core.setFailed("Missing either comment 'body' or 'reaction-type'.");
@@ -107,6 +89,24 @@ async function run() {
       // Set a comment reaction
       if (inputs.reactionType) {
         await addReaction(octokit, repo, inputs.commentId, inputs.reactionType);
+      }
+    } else if (inputs.issueNumber) {
+      // Create a comment
+      if (!inputs.body) {
+        core.setFailed("Missing comment 'body'.");
+        return;
+      }
+      const { data: comment } = await octokit.issues.createComment({
+        owner: repo[0],
+        repo: repo[1],
+        issue_number: inputs.issueNumber,
+        body: inputs.body
+      });
+      core.info(`Created comment on issue '${inputs.issueNumber}'.`);
+
+      // Set a comment reaction
+      if (inputs.reactionType) {
+        await addReaction(octokit, repo, comment.id, inputs.reactionType);
       }
     } else {
       core.setFailed("Missing either 'issue-number' or 'comment-id'.");
