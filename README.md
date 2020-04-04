@@ -13,7 +13,6 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: 1
           body: |
             This is a multi-line test comment
@@ -30,7 +29,6 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
       - name: Update comment
         uses: peter-evans/create-or-update-comment@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: 557858210
           body: |
             **Edit:** Some additional info
@@ -43,7 +41,6 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
       - name: Add reaction
         uses: peter-evans/create-or-update-comment@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: 557858210
           reaction-type: heart
 ```
@@ -52,7 +49,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 
 | Name | Description | Default |
 | --- | --- | --- |
-| `token` | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). | |
+| `token` | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). | `GITHUB_TOKEN` |
 | `repository` | The full name of the repository in which to create or update a comment. | Current repository |
 | `issue-number` | The number of the issue or pull request in which to create a comment. | |
 | `comment-id` | The id of the comment to update. | |
@@ -76,7 +73,6 @@ jobs:
       - name: Add reaction
         uses: peter-evans/create-or-update-comment@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           reaction-type: eyes
 ```

@@ -18,7 +18,6 @@ jobs:
       - name: Create comment
         uses: ./
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: 1
           body: |
             This is a multi-line test comment

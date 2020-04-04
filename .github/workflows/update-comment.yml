@@ -18,7 +18,6 @@ jobs:
         if: github.event.issue.number == 1
         uses: ./
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           body: |
             **Edit:** Some additional info
@@ -28,6 +27,5 @@ jobs:
         if: github.event.issue.number == 1
         uses: ./
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           reaction-type: heart
