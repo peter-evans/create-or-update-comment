@@ -302,9 +302,9 @@ function wrappy (fn, cb) {
 /***/ }),
 
 /***/ 18:
-/***/ (function() {
+/***/ (function(module) {
 
-eval("require")("encoding");
+module.exports = eval("require")("encoding");
 
 
 /***/ }),
@@ -580,11 +580,13 @@ async function run() {
           body: commentBody
         });
         core.info(`Updated comment id '${inputs.commentId}'.`);
+        core.setOutput('comment-id', inputs.commentId);
       }
 
       // Set a comment reaction
       if (inputs.reactionType) {
         await addReaction(octokit, repo, inputs.commentId, inputs.reactionType);
+        core.info(`Added reaction '${inputs.reactionType}' to comment id '${inputs.commentId}'.`);
       }
     } else if (inputs.issueNumber) {
       // Create a comment
@@ -598,11 +600,13 @@ async function run() {
         issue_number: inputs.issueNumber,
         body: inputs.body
       });
-      core.info(`Created comment on issue '${inputs.issueNumber}'.`);
+      core.info(`Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`);
+      core.setOutput('comment-id', comment.id);
 
       // Set a comment reaction
       if (inputs.reactionType) {
         await addReaction(octokit, repo, comment.id, inputs.reactionType);
+        core.info(`Added reaction '${inputs.reactionType}' to comment id '${comment.id}'.`);
       }
     } else {
       core.setFailed("Missing either 'issue-number' or 'comment-id'.");

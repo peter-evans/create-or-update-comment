@@ -17,6 +17,7 @@ jobs:
 
       - name: Create comment
         uses: ./
+        id: couc
         with:
           issue-number: 1
           body: |
@@ -26,3 +27,7 @@ jobs:
 
             [1]: https://github.com/peter-evans/create-or-update-comment
           reaction-type: '+1'
+
+      - name: Check outputs
+        run: |
+          echo "Comment ID - ${{ steps.couc.outputs.comment-id }}"

@@ -57,6 +57,24 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `reaction-type` | The reaction to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 
+#### Outputs
+
+The ID of the created comment will be output for use in later steps.
+Note that in order to read the step output the action step must have an id.
+
+```yml
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
+        id: couc
+        with:
+          issue-number: 1
+          body: |
+            My comment
+      - name: Check outputs
+        run: |
+          echo "Comment ID - ${{ steps.couc.outputs.comment-id }}"
+```
+
 ### Where to find the id of a comment
 
 How to find the id of a comment will depend a lot on the use case.
