@@ -1,10 +1,11 @@
-name: Create Comment
+name: Create Comment on Pull Request
 on:
   pull_request:
     branches:
       - master
 jobs:
-  createComment:
+  createCommentOnPullRequest:
+    if: github.event.pull_request.author_association == 'OWNER'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
