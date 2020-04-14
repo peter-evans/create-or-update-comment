@@ -65,14 +65,11 @@ async function run() {
         issue_number: inputs.issueNumber,
       });
       const comment = comments.find(comment => {
-        core.info(comment.body)
-        core.info(`Includes: ${inputs.upsertId} ${comment.body.includes(`upsert-id: ${inputs.upsertId}`)}`)
         if (inputs.upsertId) {
           return comment.body.includes(`upsert-id: ${inputs.upsertId}`)
         }
         return comment.user.login === 'github-actions[bot]'
       })
-      core.info(JSON.stringify(comment, null, 4))
       if (comment) {
         // Comment to upsert
         inputs.commentId = comment.id
