@@ -45,6 +45,17 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
           reaction-type: heart
 ```
 
+### Upsert a comment
+
+```yml
+      - name: Upsert comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          upsert: true
+          body: This comment will be replaced every time
+```
+
 ### Action inputs
 
 | Name | Description | Default |
@@ -56,6 +67,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `body` | The comment body. | |
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `reaction-type` | The reaction to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
+| `upsert` | If comment should be upserted, `true` or `false`. | `false` |
 
 #### Outputs
 

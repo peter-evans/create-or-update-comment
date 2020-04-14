@@ -21,6 +21,7 @@ jobs:
         id: couc
         with:
           issue-number: ${{ github.event.number }}
+          upsert: true
           body: |
             This is a multi-line test comment
             - With GitHub **Markdown**

@@ -16,6 +16,11 @@ inputs:
     description: 'The mode when updating a comment, "replace" or "append".'
   reaction-type:
     description: 'The reaction to add to the comment.'
+  upsert:
+    description: 'If true, will update a previous reply instead of leaving a new comment.'
+    default: false
+  upsert-id:
+    description: 'Will be used as an id for upsert comments.'
 outputs:
   comment-id:
     description: 'The id of the created comment'
@@ -23,5 +28,5 @@ runs:
   using: 'node12'
   main: 'dist/index.js'
 branding:
-  icon: 'message-square'  
+  icon: 'message-square'
   color: 'gray-dark'

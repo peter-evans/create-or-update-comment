@@ -37,7 +37,9 @@ async function run() {
       commentId: core.getInput("comment-id"),
       body: core.getInput("body"),
       editMode: core.getInput("edit-mode"),
-      reactionType: core.getInput("reaction-type")
+      reactionType: core.getInput("reaction-type"),
+      upsert: core.getInput("upsert"),
+      upsertId: core.getInput("upsert-id")
     };
     core.debug(`Inputs: ${inspect(inputs)}`);
 
@@ -47,7 +49,7 @@ async function run() {
     const repo = repository.split("/");
     core.debug(`repository: ${repository}`);
 
-    const editMode = inputs.editMode ? inputs.editMode : "append";
+    let editMode = inputs.editMode ? inputs.editMode : "append";
     core.debug(`editMode: ${editMode}`);
     if (!["append", "replace"].includes(editMode)) {
       core.setFailed(`Invalid edit-mode '${editMode}'.`);
@@ -55,7 +57,32 @@ async function run() {
     }
 
     const octokit = new github.GitHub(inputs.token);
-    
+
+    if (inputs.upsert && inputs.issueNumber && inputs.body) {
+      const { data: comments } = await octokit.issues.listComments({
+        owner: repo[0],
+        repo: repo[1],
+        issue_number: inputs.issueNumber,
+      });
+      const comment = comments.find(comment => {
+        core.info(comment.body)
+        core.info(`Includes: ${inputs.upsertId} ${comment.body.includes(`upsert-id: ${inputs.upsertId}`)}`)
+        if (inputs.upsertId) {
+          return comment.body.includes(`upsert-id: ${inputs.upsertId}`)
+        }
+        return comment.user.login === 'github-actions[bot]'
+      })
+      core.info(JSON.stringify(comment, null, 4))
+      if (comment) {
+        // Comment to upsert
+        inputs.commentId = comment.id
+        editMode = "replace"
+      }
+      if (inputs.upsertId) {
+        inputs.body = inputs.body + "\n`upsert-id: " + inputs.upsertId + "`"
+      }
+    }
+
     if (inputs.commentId) {
       // Edit a comment
       if (!inputs.body && !inputs.reactionType) {
