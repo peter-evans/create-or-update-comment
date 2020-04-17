@@ -35,7 +35,7 @@ jobs:
             - Created by [create-or-update-comment][1]
 
             [1]: https://github.com/peter-evans/create-or-update-comment
-          reaction-type: '+1'
+          reactions: '+1'
 
       # Test update
       - name: Update comment
@@ -44,9 +44,10 @@ jobs:
           comment-id: ${{ steps.couc.outputs.comment-id }}
           body: |
             **Edit:** Some additional info
-          reaction-type: eyes
+          reactions: eyes
 
-      - name: Add reaction
+      # Test add reactions
+      - name: Add reactions
         uses: ./
         with:
           comment-id: ${{ steps.couc.outputs.comment-id }}
@@ -57,4 +58,4 @@ jobs:
         with:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          reaction-type: hooray
+          reactions: hooray
