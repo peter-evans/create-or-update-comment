@@ -15,7 +15,9 @@ inputs:
   edit-mode:
     description: 'The mode when updating a comment, "replace" or "append".'
   reaction-type:
-    description: 'The reaction to add to the comment.'
+    description: 'Deprecated in favour of `reactions`'
+  reactions:
+    description: 'A comma separated list of reactions to add to the comment.'
 outputs:
   comment-id:
     description: 'The id of the created comment'

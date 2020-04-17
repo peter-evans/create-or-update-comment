@@ -20,7 +20,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
             - Created by [create-or-update-comment][1]
 
             [1]: https://github.com/peter-evans/create-or-update-comment
-          reaction-type: '+1'
+          reactions: '+1'
 ```
 
 ### Update a comment
@@ -32,17 +32,17 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
           comment-id: 557858210
           body: |
             **Edit:** Some additional info
-          reaction-type: eyes
+          reactions: eyes
 ```
 
-### Add a comment reaction
+### Add comment reactions
 
 ```yml
-      - name: Add reaction
+      - name: Add reactions
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: 557858210
-          reaction-type: heart
+          reactions: heart, hooray, laugh
 ```
 
 ### Action inputs
@@ -55,7 +55,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `comment-id` | The id of the comment to update. | |
 | `body` | The comment body. | |
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
-| `reaction-type` | The reaction to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
+| `reactions` | A comma separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 
 #### Outputs
 
@@ -92,7 +92,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.comment.id }}
-          reaction-type: eyes
+          reactions: eyes
 ```
 
 ### Accessing issues and comments in other repositories
