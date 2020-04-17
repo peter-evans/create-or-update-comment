@@ -506,22 +506,57 @@ const REACTION_TYPES = [
   "heart",
   "hooray",
   "rocket",
-  "eyes"
+  "eyes",
 ];
 
-async function addReaction(octokit, repo, comment_id, reactionType) {
-  if (REACTION_TYPES.includes(reactionType)) {
-    await octokit.reactions.createForIssueComment({
-      owner: repo[0],
-      repo: repo[1],
-      comment_id: comment_id,
-      content: reactionType
-    });
-    core.info(`Set '${reactionType}' reaction on comment.`);
-  } else {
-    core.setFailed("Invalid 'reaction-type'.");
-    return;
+async function addReactions(octokit, repo, comment_id, reactions) {
+  let ReactionsSet = [
+    ...new Set(
+      reactions
+        .replace(/\s/g, "")
+        .split(",")
+        .filter((item) => {
+          if (!REACTION_TYPES.includes(item)) {
+            core.info(`Skipping invalid reaction '${item}'.`);
+            return false;
+          }
+          return true;
+        })
+    ),
+  ];
+
+  if (!ReactionsSet) {
+    core.setFailed(
+      `No valid reactions are contained in '${reactions}'.`
+    );
+    return false;
   }
+
+  let results = await Promise.allSettled(
+    ReactionsSet.map(async (item) => {
+      await octokit.reactions.createForIssueComment({
+        owner: repo[0],
+        repo: repo[1],
+        comment_id: comment_id,
+        content: item,
+      });
+      core.info(`Setting '${item}' reaction on comment.`);
+    })
+  );
+
+  for (let i = 0, l = results.length; i < l; i++) {
+    if (results[i].status === "fulfilled") {
+      core.info(
+        `Added reaction '${ReactionsSet[i]}' to comment id '${comment_id}'.`
+      );
+    } else if (results[i].status === "rejected") {
+      core.info(
+        `Adding reaction '${ReactionsSet[i]}' to comment id '${comment_id}' failed with ${results[i].reason}.`
+      );
+    }
+  }
+  ReactionsSet = undefined;
+  results = undefined;
 }
 
 async function run() {
@@ -533,7 +568,9 @@ async function run() {
       commentId: core.getInput("comment-id"),
       body: core.getInput("body"),
       editMode: core.getInput("edit-mode"),
-      reactionType: core.getInput("reaction-type")
+      reactions: core.getInput("reactions")
+        ? core.getInput("reactions")
+        : core.getInput("reaction-type"),
     };
     core.debug(`Inputs: ${inspect(inputs)}`);
 
@@ -551,11 +588,11 @@ async function run() {
     }
 
     const octokit = new github.GitHub(inputs.token);
-    
+
     if (inputs.commentId) {
       // Edit a comment
-      if (!inputs.body && !inputs.reactionType) {
-        core.setFailed("Missing either comment 'body' or 'reaction-type'.");
+      if (!inputs.body && !inputs.reactions) {
+        core.setFailed("Missing either comment 'body' or 'reactions'.");
         return;
       }
 
@@ -566,7 +603,7 @@ async function run() {
           const { data: comment } = await octokit.issues.getComment({
             owner: repo[0],
             repo: repo[1],
-            comment_id: inputs.commentId
+            comment_id: inputs.commentId,
           });
           commentBody = comment.body + "\n";
         }
@@ -577,16 +614,15 @@ async function run() {
           owner: repo[0],
           repo: repo[1],
           comment_id: inputs.commentId,
-          body: commentBody
+          body: commentBody,
         });
         core.info(`Updated comment id '${inputs.commentId}'.`);
-        core.setOutput('comment-id', inputs.commentId);
+        core.setOutput("comment-id", inputs.commentId);
       }
 
-      // Set a comment reaction
-      if (inputs.reactionType) {
-        await addReaction(octokit, repo, inputs.commentId, inputs.reactionType);
-        core.info(`Added reaction '${inputs.reactionType}' to comment id '${inputs.commentId}'.`);
+      // Set comment reactions
+      if (inputs.reactions) {
+        await addReactions(octokit, repo, inputs.commentId, inputs.reactions);
       }
     } else if (inputs.issueNumber) {
       // Create a comment
@@ -598,15 +634,16 @@ async function run() {
         owner: repo[0],
         repo: repo[1],
         issue_number: inputs.issueNumber,
-        body: inputs.body
+        body: inputs.body,
       });
-      core.info(`Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`);
-      core.setOutput('comment-id', comment.id);
+      core.info(
+        `Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`
+      );
+      core.setOutput("comment-id", comment.id);
 
-      // Set a comment reaction
-      if (inputs.reactionType) {
-        await addReaction(octokit, repo, comment.id, inputs.reactionType);
-        core.info(`Added reaction '${inputs.reactionType}' to comment id '${comment.id}'.`);
+      // Set comment reactions
+      if (inputs.reactions) {
+        await addReactions(octokit, repo, comment.id, inputs.reactions);
       }
     } else {
       core.setFailed("Missing either 'issue-number' or 'comment-id'.");
