@@ -50,7 +50,7 @@ jobs:
         uses: ./
         with:
           comment-id: ${{ steps.couc.outputs.comment-id }}
-          reaction-type: heart, hooray, laugh
+          reactions: heart, hooray, laugh
 
       - name: Add reaction
         uses: peter-evans/create-or-update-comment@v1
