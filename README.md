@@ -95,6 +95,20 @@ jobs:
           reactions: eyes
 ```
 
+Some use cases might find the [find-comment](https://github.com/peter-evans/find-comment) action useful.
+This will search an issue or pull request for the first comment containing a specified string, and/or by a specified author.
+See the repository for detailed usage.
+
+```yml
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: fc
+        with:
+          issue-number: 1
+          comment-author: peter-evans
+          body-includes: search string 1
+```
+
 ### Accessing issues and comments in other repositories
 
 You can create and update comments in another repository by using a [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) instead of `GITHUB_TOKEN`.
