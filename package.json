@@ -20,8 +20,8 @@
   },
   "homepage": "https://github.com/peter-evans/create-or-update-comment#readme",
   "dependencies": {
-    "@actions/core": "^1.1.1",
-    "@actions/github": "^2.0.0"
+    "@actions/core": "1.2.0",
+    "@actions/github": "2.0.1"
   },
   "devDependencies": {
     "@zeit/ncc": "0.22.1",
