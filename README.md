@@ -58,6 +58,9 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `reactions` | A comma separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 
+Note: This action does not work in `pull_request` workflows when triggered by a fork opening a pull request in the upstream repository.
+This is due to restrictions put in place by GitHub Actions. See [here](https://github.com/peter-evans/create-pull-request/blob/master/docs/concepts-guidelines.md#restrictions-on-forked-repositories) for further explanation.
+
 #### Outputs
 
 The ID of the created comment will be output for use in later steps.
