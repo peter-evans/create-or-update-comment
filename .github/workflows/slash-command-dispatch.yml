@@ -9,8 +9,19 @@ jobs:
       - name: Slash Command Dispatch
         uses: peter-evans/slash-command-dispatch@v1
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.ACTIONS_BOT_TOKEN }}
           reaction-token: ${{ secrets.GITHUB_TOKEN }}
-          commands: test
-          permission: admin
-          named-args: true
+          config: >
+            [
+              {
+                "command": "rebase",
+                "permission": "admin",
+                "repository": "peter-evans/slash-command-dispatch-processor",
+                "issue_type": "pull-request"
+              },
+              {
+                "command": "test",
+                "permission": "admin",
+                "named_args": true
+              }
+            ]
