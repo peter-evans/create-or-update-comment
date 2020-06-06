@@ -91,7 +91,7 @@ async function run() {
       return;
     }
 
-    const octokit = new github.GitHub(inputs.token);
+    const octokit = github.getOctokit(inputs.token);
 
     if (inputs.commentId) {
       // Edit a comment
