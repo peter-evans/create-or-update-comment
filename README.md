@@ -17,7 +17,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
           issue-number: 1
           body: |
             This is a multi-line test comment
-            - With GitHub **Markdown**
+            - With GitHub **Markdown** :sparkles:
             - Created by [create-or-update-comment][1]
 
             [1]: https://github.com/peter-evans/create-or-update-comment
