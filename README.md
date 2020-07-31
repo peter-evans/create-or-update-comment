@@ -119,9 +119,9 @@ This example shows how file content can be read into a variable and passed to th
 The content must be [escaped to preserve newlines](https://github.community/t/set-output-truncates-multiline-strings/16852/3).
 
 ```yml
-      - id: get-issue-body
+      - id: get-comment-body
         run: |
-          body=$(cat my-issue-body.txt)
+          body=$(cat comment-body.txt)
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}" 
