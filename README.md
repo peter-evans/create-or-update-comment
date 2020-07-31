@@ -113,6 +113,27 @@ See the repository for detailed usage.
           body-includes: search string 1
 ```
 
+### Setting the comment body from a file
+
+This example shows how file content can be read into a variable and passed to the action.
+The content must be [escaped to preserve newlines](https://github.community/t/set-output-truncates-multiline-strings/16852/3).
+
+```yml
+      - id: get-issue-body
+        run: |
+          body=$(cat my-issue-body.txt)
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}" 
+          echo ::set-output name=body::$body
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: 1
+          body: ${{ steps.get-issue-body.outputs.body }}
+```
+
 ### Accessing issues and comments in other repositories
 
 You can create and update comments in another repository by using a [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) instead of `GITHUB_TOKEN`.
