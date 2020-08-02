@@ -131,7 +131,7 @@ The content must be [escaped to preserve newlines](https://github.community/t/se
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: 1
-          body: ${{ steps.get-issue-body.outputs.body }}
+          body: ${{ steps.get-comment-body.outputs.body }}
 ```
 
 ### Accessing issues and comments in other repositories
