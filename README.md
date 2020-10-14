@@ -100,7 +100,7 @@ jobs:
 ```
 
 Some use cases might find the [find-comment](https://github.com/peter-evans/find-comment) action useful.
-This will search an issue or pull request for the first comment containing a specified string, and/or by a specified author.
+This will search an issue or pull request for the first comment containing a specified string, and/or by a specified author, e.g. allowing to update a previously created comment.
 See the repository for detailed usage.
 
 ```yml
@@ -109,8 +109,35 @@ See the repository for detailed usage.
         id: fc
         with:
           issue-number: 1
-          comment-author: peter-evans
+          
           body-includes: search string 1
+    steps:
+    - name: Find Comment
+      uses: peter-evans/find-comment@v1
+      id: fc
+      with:
+        issue-number: ${{ github.event.pull_request.number }} #e.g. 1
+        # comment-author: peter-evans (does not work with "github-actions" author) 
+        body-includes: This comment was written by a bot!
+
+    - name: Create comment
+      if: ${{ steps.fc.outputs.comment-id == 0 }}
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          This comment was written by a bot!
+        reaction-type: "rocket"
+
+    - name: Update comment
+      if: ${{ steps.fc.outputs.comment-id != 0 }}
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        comment-id: ${{ steps.fc.outputs.comment-id }}
+        body: |
+          Update!
+          Comments can also be updated by us. :)
+        reaction-type: "rocket"
 ```
 
 ### Setting the comment body from a file
