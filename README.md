@@ -104,14 +104,6 @@ This will search an issue or pull request for the first comment containing a spe
 See the repository for detailed usage.
 
 ```yml
-      - name: Find Comment
-        uses: peter-evans/find-comment@v1
-        id: fc
-        with:
-          issue-number: 1
-          
-          body-includes: search string 1
-    steps:
     - name: Find Comment
       uses: peter-evans/find-comment@v1
       id: fc
