@@ -110,7 +110,7 @@ In the following example, find-comment is used to determine a comment has alread
       id: fc
       with:
         issue-number: ${{ github.event.pull_request.number }} #e.g. 1
-        # comment-author: peter-evans (does not work with "github-actions" author) 
+        comment-author: 'github-actions[bot]'
         body-includes: This comment was written by a bot!
 
     - name: Create comment
