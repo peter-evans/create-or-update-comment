@@ -100,9 +100,10 @@ jobs:
 ```
 
 Some use cases might find the [find-comment](https://github.com/peter-evans/find-comment) action useful.
-This will search an issue or pull request for the first comment containing a specified string, and/or by a specified author, e.g. allowing to update a previously created comment.
+This will search an issue or pull request for the first comment containing a specified string, and/or by a specified author.
 See the repository for detailed usage.
 
+In the following example, find-comment is used to determine a comment has already been created on a pull request. In this case, the comment will be updated instead of being created.
 ```yml
     - name: Find Comment
       uses: peter-evans/find-comment@v1
