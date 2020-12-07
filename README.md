@@ -103,13 +103,14 @@ Some use cases might find the [find-comment](https://github.com/peter-evans/find
 This will search an issue or pull request for the first comment containing a specified string, and/or by a specified author.
 See the repository for detailed usage.
 
-In the following example, find-comment is used to determine a comment has already been created on a pull request. In this case, the comment will be updated instead of being created.
+In the following example, find-comment is used to determine if a comment has already been created on a pull request.
+In this case, the comment will be updated instead of being created.
 ```yml
     - name: Find Comment
       uses: peter-evans/find-comment@v1
       id: fc
       with:
-        issue-number: ${{ github.event.pull_request.number }} #e.g. 1
+        issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
         body-includes: This comment was written by a bot!
 
@@ -128,8 +129,7 @@ In the following example, find-comment is used to determine a comment has alread
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         body: |
-          Update!
-          Comments can also be updated by us. :)
+          This comment has been updated!
         reaction-type: "rocket"
 ```
 
