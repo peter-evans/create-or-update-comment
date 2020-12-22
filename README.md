@@ -110,7 +110,7 @@ In this case, the comment will be updated instead of being created.
       uses: peter-evans/find-comment@v1
       id: fc
       with:
-        issue-number: ${{ github.event.pull_request.number }}
+        issue-number: ${{ github.event.issue.number }}
         comment-author: 'github-actions[bot]'
         body-includes: This comment was written by a bot!
 
@@ -118,7 +118,7 @@ In this case, the comment will be updated instead of being created.
       if: ${{ steps.fc.outputs.comment-id == 0 }}
       uses: peter-evans/create-or-update-comment@v1
       with:
-        issue-number: ${{ github.event.pull_request.number }}
+        issue-number: ${{ github.event.issue.number }}
         body: |
           This comment was written by a bot!
         reaction-type: "rocket"
