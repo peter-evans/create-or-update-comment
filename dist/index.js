@@ -100,7 +100,7 @@ async function run() {
 
     const octokit = github.getOctokit(inputs.token);
 
-    if (inputs.commentId) {
+    if ((inputs.commentId) && (inputs.commentId != 0)) {
       // Edit a comment
       if (!inputs.body && !inputs.reactions) {
         core.setFailed("Missing either comment 'body' or 'reactions'.");
