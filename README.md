@@ -104,7 +104,29 @@ This will search an issue or pull request for the first comment containing a spe
 See the repository for detailed usage.
 
 In the following example, find-comment is used to determine if a comment has already been created on a pull request.
-In this case, the comment will be updated instead of being created.
+If the find-comment action output `comment-id` returns an empty string, a new comment will be created.
+If it returns a value, the comment already exists and the content is replaced.
+```yml
+    - name: Find Comment
+      uses: peter-evans/find-comment@v1
+      id: fc
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: 'github-actions[bot]'
+        body-includes: Build output
+
+    - name: Create or update comment
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        comment-id: ${{ steps.fc.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          Build output
+          ${{ steps.build.outputs.build-log }}
+        edit-mode: replace
+```
+
+If required, the create and update steps can be separated for greater control.
 ```yml
     - name: Find Comment
       uses: peter-evans/find-comment@v1
@@ -115,22 +137,22 @@ In this case, the comment will be updated instead of being created.
         body-includes: This comment was written by a bot!
 
     - name: Create comment
-      if: ${{ steps.fc.outputs.comment-id == 0 }}
+      if: steps.fc.outputs.comment-id == ''
       uses: peter-evans/create-or-update-comment@v1
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           This comment was written by a bot!
-        reaction-type: "rocket"
+        reactions: rocket
 
     - name: Update comment
-      if: ${{ steps.fc.outputs.comment-id != 0 }}
+      if: steps.fc.outputs.comment-id != ''
       uses: peter-evans/create-or-update-comment@v1
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         body: |
           This comment has been updated!
-        reaction-type: "rocket"
+        reactions: hooray
 ```
 
 ### Setting the comment body from a file
