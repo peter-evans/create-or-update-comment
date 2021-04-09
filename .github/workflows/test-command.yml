@@ -59,3 +59,18 @@ jobs:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
+
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@v1.2
+        with:
+          template: .github/comment-template.md
+          vars: |
+            foo: this
+            bar: that
+
+      - name: Create comment
+        uses: ./
+        with:
+          issue-number: 1
+          body: ${{ steps.template.outputs.result }}
