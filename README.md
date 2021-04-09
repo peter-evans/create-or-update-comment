@@ -176,6 +176,32 @@ The content must be [escaped to preserve newlines](https://github.community/t/se
           body: ${{ steps.get-comment-body.outputs.body }}
 ```
 
+### Using a markdown template
+
+In this example, a markdown template file is added to the repository at `.github/comment-template.md` with the following content.
+```
+This is a test comment template
+Render template variables such as {{ .foo }} and {{ .bar }}.
+```
+
+The template is rendered using the [render-template](https://github.com/chuhlomin/render-template) action and the result is used to create the comment.
+```yml
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@v1.2
+        with:
+          template: .github/comment-template.md
+          vars: |
+            foo: this
+            bar: that
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: 1
+          body: ${{ steps.template.outputs.result }}
+```
+
 ### Accessing issues and comments in other repositories
 
 You can create and update comments in another repository by using a [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) instead of `GITHUB_TOKEN`.
