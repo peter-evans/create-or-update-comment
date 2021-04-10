@@ -156,6 +156,9 @@ async function run() {
   } catch (error) {
     core.debug(inspect(error));
     core.setFailed(error.message);
+    if (error.message == 'Resource not accessible by integration') {
+      core.error(`See this action's readme for details about this error`);
+    }
   }
 }
 

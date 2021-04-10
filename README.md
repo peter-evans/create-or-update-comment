@@ -59,6 +59,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `reactions` | A comma separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 
 Note: In *public* repositories this action does not work in `pull_request` workflows when triggered by forks.
+Any attempt will be met with the error, `Resource not accessible by integration`.
 This is due to token restrictions put in place by GitHub Actions. Private repositories can be configured to [enable workflows](https://docs.github.com/en/github/administering-a-repository/disabling-or-limiting-github-actions-for-a-repository#enabling-workflows-for-private-repository-forks) from forks to run without restriction. See [here](https://github.com/peter-evans/create-pull-request/blob/master/docs/concepts-guidelines.md#restrictions-on-repository-forks) for further explanation. Alternatively, use the [`pull_request_target`](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request_target) event to comment on pull requests.
 
 #### Outputs
