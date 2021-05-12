@@ -14,7 +14,7 @@ jobs:
           if [[ -z "$repository" ]]; then repository=${{ github.repository }}; fi
           echo ::set-output name=repository::$repository
           branch=${{ github.event.client_payload.slash_command.branch }}
-          if [[ -z "$branch" ]]; then branch="master"; fi
+          if [[ -z "$branch" ]]; then branch="main"; fi
           echo ::set-output name=branch::$branch
 
       # Checkout the branch to test
