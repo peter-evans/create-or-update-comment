@@ -50,7 +50,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 
 | Name | Description | Default |
 | --- | --- | --- |
-| `token` | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). | `GITHUB_TOKEN` |
+| `token` | `GITHUB_TOKEN` (`issues: write`, `pull-requests: write`) or a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). | `GITHUB_TOKEN` |
 | `repository` | The full name of the repository in which to create or update a comment. | Current repository |
 | `issue-number` | The number of the issue or pull request in which to create a comment. | |
 | `comment-id` | The id of the comment to update. | |
