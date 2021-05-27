@@ -38,7 +38,7 @@ async function addReactions(octokit, repo, comment_id, reactions) {
 
   let results = await Promise.allSettled(
     ReactionsSet.map(async (item) => {
-      await octokit.reactions.createForIssueComment({
+      await octokit.rest.reactions.createForIssueComment({
         owner: repo[0],
         repo: repo[1],
         comment_id: comment_id,
@@ -104,7 +104,7 @@ async function run() {
         var commentBody = "";
         if (editMode == "append") {
           // Get the comment body
-          const { data: comment } = await octokit.issues.getComment({
+          const { data: comment } = await octokit.rest.issues.getComment({
             owner: repo[0],
             repo: repo[1],
             comment_id: inputs.commentId,
@@ -114,7 +114,7 @@ async function run() {
 
         commentBody = commentBody + inputs.body;
         core.debug(`Comment body: ${commentBody}`);
-        await octokit.issues.updateComment({
+        await octokit.rest.issues.updateComment({
           owner: repo[0],
           repo: repo[1],
           comment_id: inputs.commentId,
@@ -134,7 +134,7 @@ async function run() {
         core.setFailed("Missing comment 'body'.");
         return;
       }
-      const { data: comment } = await octokit.issues.createComment({
+      const { data: comment } = await octokit.rest.issues.createComment({
         owner: repo[0],
         repo: repo[1],
         issue_number: inputs.issueNumber,
