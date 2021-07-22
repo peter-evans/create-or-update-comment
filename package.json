@@ -20,12 +20,12 @@
   },
   "homepage": "https://github.com/peter-evans/create-or-update-comment#readme",
   "dependencies": {
-    "@actions/core": "1.3.0",
+    "@actions/core": "1.4.0",
     "@actions/github": "5.0.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "0.28.6",
-    "eslint": "7.27.0",
-    "jest": "27.0.1"
+    "@vercel/ncc": "0.29.0",
+    "eslint": "7.31.0",
+    "jest": "27.0.6"
   }
 }
