@@ -164,11 +164,11 @@ The content must be [escaped to preserve newlines](https://github.community/t/se
 ```yml
       - id: get-comment-body
         run: |
-          body=$(cat comment-body.txt)
+          body="$(cat comment-body.txt)"
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}" 
-          echo ::set-output name=body::$body
+          echo "::set-output name=body::$body"
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v1
