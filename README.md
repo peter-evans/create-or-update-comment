@@ -177,6 +177,26 @@ The content must be [escaped to preserve newlines](https://github.community/t/se
           body: ${{ steps.get-comment-body.outputs.body }}
 ```
 
+#### An alternative way to set the comment body from a file
+
+The method above can set a comment body with a maximum length of 131060 (= 1024 * 128 - 12) bytes in UTF-8 (e.g. 131060 ASCII characters or 43686 Chinese characters).
+With the method below, you can set a comment body with a maximum length of 262144 (= 1024 * 256) bytes in UTF-8 (e.g. 262144 ASCII characters or 87381 Chinese characters).
+
+```yml
+      - name: Create comment
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const fs = require("fs");
+            const body = fs.readFileSync("comment-body.txt", "utf8");
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1,
+              body: body
+            });
+```
+
 ### Using a markdown template
 
 In this example, a markdown template file is added to the repository at `.github/comment-template.md` with the following content.
