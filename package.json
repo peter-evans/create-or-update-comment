@@ -24,8 +24,8 @@
     "@actions/github": "5.0.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "0.32.0",
-    "eslint": "8.3.0",
-    "jest": "27.4.3"
+    "@vercel/ncc": "0.33.1",
+    "eslint": "8.7.0",
+    "jest": "27.4.7"
   }
 }
