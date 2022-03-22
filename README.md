@@ -109,7 +109,7 @@ If the find-comment action output `comment-id` returns an empty string, a new co
 If it returns a value, the comment already exists and the content is replaced.
 ```yml
     - name: Find Comment
-      uses: peter-evans/find-comment@v1
+      uses: peter-evans/find-comment@v2
       id: fc
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -130,7 +130,7 @@ If it returns a value, the comment already exists and the content is replaced.
 If required, the create and update steps can be separated for greater control.
 ```yml
     - name: Find Comment
-      uses: peter-evans/find-comment@v1
+      uses: peter-evans/find-comment@v2
       id: fc
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -189,7 +189,7 @@ The template is rendered using the [render-template](https://github.com/chuhlomi
 ```yml
       - name: Render template
         id: template
-        uses: chuhlomin/render-template@v1.2
+        uses: chuhlomin/render-template@v1.4
         with:
           template: .github/comment-template.md
           vars: |
