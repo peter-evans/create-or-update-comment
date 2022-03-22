@@ -1,6 +1,6 @@
 {
   "name": "create-or-update-comment",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Create or update an issue or pull request comment",
   "main": "index.js",
   "scripts": {

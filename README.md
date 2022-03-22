@@ -12,7 +12,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 
 ```yml
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: 1
           body: |
@@ -28,7 +28,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 
 ```yml
       - name: Update comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: 557858210
           body: |
@@ -40,7 +40,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 
 ```yml
       - name: Add reactions
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: 557858210
           reactions: heart, hooray, laugh
@@ -69,7 +69,7 @@ Note that in order to read the step output the action step must have an id.
 
 ```yml
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         id: couc
         with:
           issue-number: 1
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add reaction
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: eyes
@@ -117,7 +117,7 @@ If it returns a value, the comment already exists and the content is replaced.
         body-includes: Build output
 
     - name: Create or update comment
-      uses: peter-evans/create-or-update-comment@v1
+      uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
@@ -139,7 +139,7 @@ If required, the create and update steps can be separated for greater control.
 
     - name: Create comment
       if: steps.fc.outputs.comment-id == ''
-      uses: peter-evans/create-or-update-comment@v1
+      uses: peter-evans/create-or-update-comment@v2
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
@@ -148,7 +148,7 @@ If required, the create and update steps can be separated for greater control.
 
     - name: Update comment
       if: steps.fc.outputs.comment-id != ''
-      uses: peter-evans/create-or-update-comment@v1
+      uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         body: |
@@ -171,7 +171,7 @@ The content must be [escaped to preserve newlines](https://github.community/t/se
           echo "::set-output name=body::$body"
 
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: 1
           body: ${{ steps.get-comment-body.outputs.body }}
@@ -197,7 +197,7 @@ The template is rendered using the [render-template](https://github.com/chuhlomi
             bar: that
 
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: 1
           body: ${{ steps.template.outputs.result }}
