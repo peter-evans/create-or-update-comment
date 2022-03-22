@@ -16,18 +16,18 @@ jobs:
     outputs:
       issue-number: ${{ steps.vars.outputs.issue-number }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 12.x
+          node-version: 16.x
       - run: npm ci
       - run: npm run test
       - run: npm run package
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: action.yml
           path: action.yml
@@ -47,14 +47,14 @@ jobs:
       matrix:
         target: [built, committed]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - if: matrix.target == 'built' || github.event_name == 'pull_request'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
       - if: matrix.target == 'built' || github.event_name == 'pull_request'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: action.yml
           path: .
@@ -91,8 +91,8 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
