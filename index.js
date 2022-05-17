@@ -2,6 +2,7 @@ const { inspect } = require("util");
 const core = require("@actions/core");
 const github = require("@actions/github");
 
+const MAXIMUM_COMMENT_LENGTH = 65536;
 const REACTION_TYPES = [
   "+1",
   "-1",
@@ -88,6 +89,11 @@ async function run() {
     core.debug(`editMode: ${editMode}`);
     if (!["append", "replace"].includes(editMode)) {
       core.setFailed(`Invalid edit-mode '${editMode}'.`);
+      return;
+    }
+
+    if (inputs.body && inputs.body.length > MAXIMUM_COMMENT_LENGTH) {
+      core.setFailed(`Comment body is too long. Maximum length is ${MAXIMUM_COMMENT_LENGTH} characters.`);
       return;
     }
 
