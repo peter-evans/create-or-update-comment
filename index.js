@@ -1,5 +1,5 @@
 const { inspect } = require("util");
-const { readFileSync } = require("fs");
+const { readFileSync, existsSync } = require("fs");
 const core = require("@actions/core");
 const github = require("@actions/github");
 
@@ -73,6 +73,7 @@ async function run() {
       commentId: core.getInput("comment-id"),
       body: core.getInput("body"),
       file: core.getInput("file"),
+      fileEncoding: core.getInput("file-encoding") || 'utf8',
       editMode: core.getInput("edit-mode"),
       reactions: core.getInput("reactions")
         ? core.getInput("reactions")
@@ -93,12 +94,19 @@ async function run() {
       return;
     }
 
-    const octokit = github.getOctokit(inputs.token);
-
-    let bodyToUse = inputs.body;
-    if (inputs.file) {
-      bodyToUse = readFileSync(inputs.file, "utf8"); 
+    if (inputs.file && inputs.body) {
+      core.setFailed("Only one of 'file' or 'body' can be set.");
+      return;
     }
+
+    if (inputs.file) {
+      if (!existsSync(inputs.file)) {
+        core.setFailed(`File '${inputs.file}' does not exist.`);
+        return;
+      }
+    }
+
+    const octokit = github.getOctokit(inputs.token);
 
     if (inputs.commentId) {
       // Edit a comment
@@ -107,7 +115,9 @@ async function run() {
         return;
       }
 
-      if (bodyToUse) {
+      const body = getBodyOrFile(inputs);
+
+      if (body) {
         var commentBody = "";
         if (editMode == "append") {
           // Get the comment body
@@ -119,7 +129,7 @@ async function run() {
           commentBody = comment.body + "\n";
         }
 
-        commentBody = commentBody + bodyToUse;
+        commentBody = commentBody + body;
         core.debug(`Comment body: ${commentBody}`);
         await octokit.rest.issues.updateComment({
           owner: repo[0],
@@ -137,15 +147,18 @@ async function run() {
       }
     } else if (inputs.issueNumber) {
       // Create a comment
-      if (!inputs.body && !inputs.file) {
+      const body = getBodyOrFile(inputs);
+
+      if (!body) {
         core.setFailed("Missing comment 'body' or 'file'.");
         return;
       }
+
       const { data: comment } = await octokit.rest.issues.createComment({
         owner: repo[0],
         repo: repo[1],
         issue_number: inputs.issueNumber,
-        body: bodyToUse,
+        body,
       });
       core.info(
         `Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`
@@ -166,6 +179,14 @@ async function run() {
     if (error.message == 'Resource not accessible by integration') {
       core.error(`See this action's readme for details about this error`);
     }
+  }
+}
+
+function getBodyOrFile (inputs) {
+  if (inputs.body) {
+    return inputs.body;
+  } else if (inputs.file) {
+    return readFileSync(inputs.file, inputs.fileEncoding);
   }
 }
 
