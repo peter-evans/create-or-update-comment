@@ -55,6 +55,8 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `issue-number` | The number of the issue or pull request in which to create a comment. | |
 | `comment-id` | The id of the comment to update. | |
 | `body` | The comment body. | |
+| `file` | The path to a file that can be read as `body`. Use either `file` or `body`, but not both. | |
+| `fileEncoding` | The encoding of the file provided as `file`. | `utf8` |
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `reactions` | A comma separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 
@@ -158,23 +160,12 @@ If required, the create and update steps can be separated for greater control.
 
 ### Setting the comment body from a file
 
-This example shows how file content can be read into a variable and passed to the action.
-The content must be [escaped to preserve newlines](https://github.community/t/set-output-truncates-multiline-strings/16852/3).
-
 ```yml
-      - id: get-comment-body
-        run: |
-          body="$(cat comment-body.txt)"
-          body="${body//'%'/'%25'}"
-          body="${body//$'\n'/'%0A'}"
-          body="${body//$'\r'/'%0D'}" 
-          echo "::set-output name=body::$body"
-
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: 1
-          body: ${{ steps.get-comment-body.outputs.body }}
+          file: 'comment-body.txt'
 ```
 
 ### Using a markdown template
