@@ -8573,6 +8573,7 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const { inspect } = __nccwpck_require__(3837);
+const { readFileSync } = __nccwpck_require__(7147);
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 
@@ -8645,6 +8646,7 @@ async function run() {
       issueNumber: core.getInput("issue-number"),
       commentId: core.getInput("comment-id"),
       body: core.getInput("body"),
+      file: core.getInput("file"),
       editMode: core.getInput("edit-mode"),
       reactions: core.getInput("reactions")
         ? core.getInput("reactions")
@@ -8667,14 +8669,19 @@ async function run() {
 
     const octokit = github.getOctokit(inputs.token);
 
+    let bodyToUse = inputs.body;
+    if (inputs.file) {
+      bodyToUse = readFileSync(inputs.file, "utf8"); 
+    }
+
     if (inputs.commentId) {
       // Edit a comment
-      if (!inputs.body && !inputs.reactions) {
-        core.setFailed("Missing either comment 'body' or 'reactions'.");
+      if (!inputs.body && !inputs.reactions && !inputs.file) {
+        core.setFailed("Missing either comment 'body', 'file', or 'reactions'.");
         return;
       }
 
-      if (inputs.body) {
+      if (bodyToUse) {
         var commentBody = "";
         if (editMode == "append") {
           // Get the comment body
@@ -8686,7 +8693,7 @@ async function run() {
           commentBody = comment.body + "\n";
         }
 
-        commentBody = commentBody + inputs.body;
+        commentBody = commentBody + bodyToUse;
         core.debug(`Comment body: ${commentBody}`);
         await octokit.rest.issues.updateComment({
           owner: repo[0],
@@ -8704,15 +8711,15 @@ async function run() {
       }
     } else if (inputs.issueNumber) {
       // Create a comment
-      if (!inputs.body) {
-        core.setFailed("Missing comment 'body'.");
+      if (!inputs.body && !inputs.file) {
+        core.setFailed("Missing comment 'body' or 'file'.");
         return;
       }
       const { data: comment } = await octokit.rest.issues.createComment({
         owner: repo[0],
         repo: repo[1],
         issue_number: inputs.issueNumber,
-        body: inputs.body,
+        body: bodyToUse,
       });
       core.info(
         `Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`
