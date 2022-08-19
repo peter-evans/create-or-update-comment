@@ -10,6 +10,12 @@ on:
     paths-ignore:
       - 'README.md'
       - 'docs/**'
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
