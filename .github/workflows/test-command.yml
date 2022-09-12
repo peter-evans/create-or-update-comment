@@ -18,7 +18,7 @@ jobs:
           echo ::set-output name=branch::$branch
 
       # Checkout the branch to test
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: ${{ steps.vars.outputs.repository }}
           ref: ${{ steps.vars.outputs.branch }}
