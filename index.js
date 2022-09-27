@@ -13,6 +13,16 @@ const REACTION_TYPES = [
   "eyes",
 ];
 
+const HIDE_REASONS = [
+  "off topic",
+  "outdated",
+  "resolved",
+  "spam",
+  "abuse",
+  "dublicated",
+];
+
+
 async function addReactions(octokit, repo, comment_id, reactions) {
   let ReactionsSet = [
     ...new Set(
@@ -72,6 +82,8 @@ async function run() {
       commentId: core.getInput("comment-id"),
       body: core.getInput("body"),
       editMode: core.getInput("edit-mode"),
+      hideComments: core.getInput("hide-comment-contain"),
+      hideReason: core.getInput("hide-reason"),
       reactions: core.getInput("reactions")
         ? core.getInput("reactions")
         : core.getInput("reaction-type"),
@@ -148,6 +160,24 @@ async function run() {
       // Set comment reactions
       if (inputs.reactions) {
         await addReactions(octokit, repo, comment.id, inputs.reactions);
+      }
+    } else if(inputs.hideComments) {
+      // Hide comments
+      const { data: comments } = await octokit.rest.pulls.listComments({
+        owner: repo[0],
+        repo: repo[1],
+        issue_number: inputs.issueNumber,
+      });
+      for (let i = 0, l = comments.length; i < l; i++) {
+        if (comments[i].body.includes(inputs.hideComments)) {
+          await octokit.rest.pulls.hideComments({
+            owner: repo[0],
+            repo: repo[1],
+            comment_id: comments[i].id,
+            reason: HIDE_REASONS.includes(inputs.hideReason.toLowerCase) ? inputs.hideReason : "off_topic",
+          });
+          core.info(`Hidden comment id '${comments[i].id}'.`);
+        }
       }
     } else {
       core.setFailed("Missing either 'issue-number' or 'comment-id'.");

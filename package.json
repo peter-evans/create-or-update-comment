@@ -1,7 +1,7 @@
 {
-  "name": "create-or-update-comment",
-  "version": "2.0.0",
-  "description": "Create or update an issue or pull request comment",
+  "name": "create-hide-or-update-comment",
+  "version": "2.0.1",
+  "description": "Create, Hide or update an issue or pull request comment",
   "main": "index.js",
   "scripts": {
     "lint": "eslint index.js",
