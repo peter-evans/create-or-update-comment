@@ -105,7 +105,7 @@ async function run() {
 
     const octokit = github.getOctokit(inputs.token);
 
-    if (inputs.hideComments) {
+    if (inputs.body) {
       // Hide comments
       const { data: comments } = await octokit.rest.pulls.listComments({
         owner: repo[0],
@@ -113,7 +113,7 @@ async function run() {
         issue_number: inputs.issueNumber,
       });
       for (let i = 0, l = comments.length; i < l; i++) {
-        if (comments[i].body.includes(inputs.hideComments)) {
+        if (comments[i].body.includes(inputs.body)) {
           await octokit.rest.pulls.hideComments({
             owner: repo[0],
             repo: repo[1],
