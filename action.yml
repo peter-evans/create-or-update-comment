@@ -18,6 +18,10 @@ inputs:
     description: 'Deprecated in favour of `reactions`'
   reactions:
     description: 'A comma separated list of reactions to add to the comment.'
+  hide-comment-contain:
+    description: 'Hide comment if it contains this string.'
+  hide-reason:
+    description: 'Reason for hiding the comment.'
 outputs:
   comment-id:
     description: 'The id of the created comment'
