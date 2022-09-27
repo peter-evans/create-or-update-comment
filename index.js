@@ -112,6 +112,9 @@ async function run() {
         repo: repo[1],
         issue_number: inputs.issueNumber,
       });
+      core.info(`Found ${comments} comments.`);
+      core.warning(`Found ${comments} comments.`);
+      console.log(comments, comments.length);
       for (let i = 0, l = comments.length; i < l; i++) {
         if (comments[i].body.includes(inputs.body)) {
           await octokit.rest.issues.hideComments({
