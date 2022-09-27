@@ -105,41 +105,60 @@ async function run() {
 
     const octokit = github.getOctokit(inputs.token);
 
-    if (inputs.commentId) {
-      // Edit a comment
-      if (!inputs.body && !inputs.reactions) {
-        core.setFailed("Missing either comment 'body' or 'reactions'.");
-        return;
-      }
-
-      if (inputs.body) {
-        var commentBody = "";
-        if (editMode == "append") {
-          // Get the comment body
-          const { data: comment } = await octokit.rest.issues.getComment({
+    if (inputs.hideComments) {
+      // Hide comments
+      const { data: comments } = await octokit.rest.pulls.listComments({
+        owner: repo[0],
+        repo: repo[1],
+        issue_number: inputs.issueNumber,
+      });
+      for (let i = 0, l = comments.length; i < l; i++) {
+        if (comments[i].body.includes(inputs.hideComments)) {
+          await octokit.rest.pulls.hideComments({
             owner: repo[0],
             repo: repo[1],
-            comment_id: inputs.commentId,
+            comment_id: comments[i].id,
+            reason: HIDE_REASONS.includes(inputs.hideReason.toLowerCase) ? inputs.hideReason : "off_topic",
           });
-          commentBody = comment.body + "\n";
+          core.info(`Hidden comment id '${comments[i].id}'.`);
         }
-
-        commentBody = commentBody + inputs.body;
-        core.debug(`Comment body: ${commentBody}`);
-        await octokit.rest.issues.updateComment({
-          owner: repo[0],
-          repo: repo[1],
-          comment_id: inputs.commentId,
-          body: commentBody,
-        });
-        core.info(`Updated comment id '${inputs.commentId}'.`);
-        core.setOutput("comment-id", inputs.commentId);
       }
-
-      // Set comment reactions
-      if (inputs.reactions) {
-        await addReactions(octokit, repo, inputs.commentId, inputs.reactions);
-      }
+      
+    } else if(inputs.commentId) {
+      // Edit a comment
+      if (!inputs.body && !inputs.reactions) {
+       core.setFailed("Missing either comment 'body' or 'reactions'.");
+       return;
+     }
+ 
+     if (inputs.body) {
+       var commentBody = "";
+       if (editMode == "append") {
+         // Get the comment body
+         const { data: comment } = await octokit.rest.issues.getComment({
+           owner: repo[0],
+           repo: repo[1],
+           comment_id: inputs.commentId,
+         });
+         commentBody = comment.body + "\n";
+       }
+ 
+       commentBody = commentBody + inputs.body;
+       core.debug(`Comment body: ${commentBody}`);
+       await octokit.rest.issues.updateComment({
+         owner: repo[0],
+         repo: repo[1],
+         comment_id: inputs.commentId,
+         body: commentBody,
+       });
+       core.info(`Updated comment id '${inputs.commentId}'.`);
+       core.setOutput("comment-id", inputs.commentId);
+     }
+ 
+     // Set comment reactions
+     if (inputs.reactions) {
+       await addReactions(octokit, repo, inputs.commentId, inputs.reactions);
+     } 
     } else if (inputs.issueNumber) {
       // Create a comment
       if (!inputs.body) {
@@ -160,24 +179,6 @@ async function run() {
       // Set comment reactions
       if (inputs.reactions) {
         await addReactions(octokit, repo, comment.id, inputs.reactions);
-      }
-    } else if(inputs.hideComments) {
-      // Hide comments
-      const { data: comments } = await octokit.rest.pulls.listComments({
-        owner: repo[0],
-        repo: repo[1],
-        issue_number: inputs.issueNumber,
-      });
-      for (let i = 0, l = comments.length; i < l; i++) {
-        if (comments[i].body.includes(inputs.hideComments)) {
-          await octokit.rest.pulls.hideComments({
-            owner: repo[0],
-            repo: repo[1],
-            comment_id: comments[i].id,
-            reason: HIDE_REASONS.includes(inputs.hideReason.toLowerCase) ? inputs.hideReason : "off_topic",
-          });
-          core.info(`Hidden comment id '${comments[i].id}'.`);
-        }
       }
     } else {
       core.setFailed("Missing either 'issue-number' or 'comment-id'.");
