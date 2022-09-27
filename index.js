@@ -107,7 +107,7 @@ async function run() {
 
     if (inputs.body) {
       // Hide comments
-      const { data: comments } = await octokit.rest.pulls.listComments({
+      const { data: comments } = await octokit.rest.issues.listComments({
         owner: repo[0],
         repo: repo[1],
         issue_number: inputs.issueNumber,
