@@ -4,22 +4,10 @@ inputs:
   token:
     description: 'GITHUB_TOKEN or a repo scoped PAT.'
     default: ${{ github.token }}
-  repository:
-    description: 'The full name of the repository in which to create or update a comment.'
   issue-number:
     description: 'The number of the issue or pull request in which to create a comment.'
-  comment-id:
-    description: 'The id of the comment to update.'
   body:
     description: 'The comment body.'
-  edit-mode:
-    description: 'The mode when updating a comment, "replace" or "append".'
-  reaction-type:
-    description: 'Deprecated in favour of `reactions`'
-  reactions:
-    description: 'A comma separated list of reactions to add to the comment.'
-  hide-comment-contain:
-    description: 'Hide comment if it contains this string.'
   hide-reason:
     description: 'Reason for hiding the comment.'
 outputs:
