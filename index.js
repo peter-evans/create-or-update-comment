@@ -123,7 +123,7 @@ async function run() {
           core.info(`Hidden comment id '${comments[i].id}'.`);
         }
       }
-      
+      return;
     } else if(inputs.commentId) {
       // Edit a comment
       if (!inputs.body && !inputs.reactions) {

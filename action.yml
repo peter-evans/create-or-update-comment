@@ -1,5 +1,5 @@
-name: 'Create Hide or Update Comment'
-description: 'Create Hide or update an issue or pull request comment'
+name: 'Create, Hide or Update Comment'
+description: 'Create, Hide or update an issue or pull request comment'
 inputs:
   token:
     description: 'GITHUB_TOKEN or a repo scoped PAT.'
