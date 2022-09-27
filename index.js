@@ -114,11 +114,11 @@ async function run() {
       });
       for (let i = 0, l = comments.length; i < l; i++) {
         if (comments[i].body.includes(inputs.body)) {
-          await octokit.rest.pulls.hideComments({
+          await octokit.rest.issues.hideComments({
             owner: repo[0],
             repo: repo[1],
             comment_id: comments[i].id,
-            reason: HIDE_REASONS.includes(inputs.hideReason.toLowerCase) ? inputs.hideReason : "off_topic",
+            reason: HIDE_REASONS.includes(inputs.hideReason.toLowerCase) ? inputs.hideReason : "Outdated",
           });
           core.info(`Hidden comment id '${comments[i].id}'.`);
         }
