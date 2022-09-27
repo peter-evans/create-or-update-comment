@@ -124,7 +124,7 @@ async function run() {
         }
       }
       return;
-    } else if(inputs.commentId) {
+    } else if(inputs.commentId === "test") {
       // Edit a comment
       if (!inputs.body && !inputs.reactions) {
        core.setFailed("Missing either comment 'body' or 'reactions'.");
@@ -159,7 +159,7 @@ async function run() {
      if (inputs.reactions) {
        await addReactions(octokit, repo, inputs.commentId, inputs.reactions);
      } 
-    } else if (inputs.issueNumber) {
+    } else if (inputs.issueNumber === "test") {
       // Create a comment
       if (!inputs.body) {
         core.setFailed("Missing comment 'body'.");
