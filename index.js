@@ -16,9 +16,9 @@ async function run() {
   try {
     const inputs = {
       token: core.getInput("token"),
-      issueNumber: core.getInput("issue_number"),
+      issueNumber: core.getInput("issue-number"),
       body: core.getInput("body"),
-      hideReason: core.getInput("reason"),
+      hideReason: core.getInput("hide-reason"),
     };
     core.debug(`Inputs: ${inspect(inputs)}`);
 
@@ -30,16 +30,14 @@ async function run() {
 
     // const octokit = github.getOctokit(inputs.token);
 
-    console.log(inputs.body);
-    if (inputs.body) {
 
-      console.log(`Hello ${inputs.issueNumber}!`);
 
-      console.log(`Hello ${inputs.nameToGreet2}!`);
+      console.log(`issueNumber ${inputs.issueNumber}!`);
 
-      console.log(`Hello ${inputs.nameToGreet3}!`);
+      console.log(`body ${inputs.body}!`);
 
-      await new Promise((resolve) => setTimeout(resolve, 120000));
+      console.log(`hideReason ${inputs.hideReason}!`);
+
 
       const payload = JSON.stringify(github.context.payload, undefined, 2);
       console.log(`The event payload: ${payload}`);
@@ -64,10 +62,7 @@ async function run() {
       //     core.info(`Hidden comment id '${comments[i].id}'.`);
       //   }
       // }
-    } else {
-      core.setFailed("Missing either 'issue_number'.");
-      return;
-    }
+    
   } catch (error) {
     core.debug(inspect(error));
     core.setFailed(error.message);
