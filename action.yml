@@ -1,18 +1,20 @@
-name: 'Create, Hide or Update Comment'
-description: 'Create, Hide or update an issue or pull request comment'
+name: 'Hide issue or PRs Comments'
+description: 'This action use for Hide issue or PRs Comments'
 inputs:
   token:
-    description: 'GITHUB_TOKEN or a repo scoped PAT.'
-    default: ${{ github.token }}
-  issue-number:
-    description: 'The number of the issue or pull request in which to create a comment.'
+    description: "GitHub token"
+    required: true
+  issue_number:
+    description: "Issue or PR number"
+    required: true
   body:
-    description: 'The comment body.'
-  hide-reason:
-    description: 'Reason for hiding the comment.'
+    description: "is Comment body contain this String"
+    required: true
+  reason:
+    description: "Reason for hide"
 outputs:
-  comment-id:
-    description: 'The id of the created comment'
+  result:
+    description: "Result"
 runs:
   using: 'node16'
   main: 'dist/index.js'
