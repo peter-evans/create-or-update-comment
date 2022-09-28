@@ -43,7 +43,7 @@ async function run() {
 
       const payload = JSON.stringify(github.context.payload, undefined, 2);
       console.log(`The event payload: ${payload}`);
-      
+
       // Hide comments
       // const { data: comments } = await octokit.rest.issues.listComments({
       //   owner: repo[0],
@@ -65,7 +65,7 @@ async function run() {
       //   }
       // }
     } else {
-      core.setFailed("Missing either 'issue-number' or 'comment-id'.");
+      core.setFailed("Missing either 'issue_number'.");
       return;
     }
   } catch (error) {
