@@ -168,7 +168,7 @@ The content must be [escaped to preserve newlines](https://github.community/t/se
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}" 
-          echo "::set-output name=body::$body"
+          echo "body=$body" >> $GITHUB_OUTPUT
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v2

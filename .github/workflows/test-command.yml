@@ -12,10 +12,10 @@ jobs:
         run: |
           repository=${{ github.event.client_payload.slash_command.repository }}
           if [[ -z "$repository" ]]; then repository=${{ github.repository }}; fi
-          echo ::set-output name=repository::$repository
+          echo "repository=$repository" >> $GITHUB_OUTPUT
           branch=${{ github.event.client_payload.slash_command.branch }}
           if [[ -z "$branch" ]]; then branch="main"; fi
-          echo ::set-output name=branch::$branch
+          echo "branch=$branch" >> $GITHUB_OUTPUT
 
       # Checkout the branch to test
       - uses: actions/checkout@v3

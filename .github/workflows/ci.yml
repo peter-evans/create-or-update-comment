@@ -40,9 +40,9 @@ jobs:
       - id: vars
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then \
-            echo "::set-output name=issue-number::${{ github.event.number }}"; \
+            echo "issue-number=${{ github.event.number }}" >> $GITHUB_OUTPUT; \
           else \
-            echo "::set-output name=issue-number::1"; \
+            echo "issue-number=1" >> $GITHUB_OUTPUT; \
           fi
 
   test:
