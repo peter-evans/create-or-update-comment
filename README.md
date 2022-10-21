@@ -159,7 +159,6 @@ If required, the create and update steps can be separated for greater control.
 ### Setting the comment body from a file
 
 This example shows how file content can be read into a variable and passed to the action.
-The content must be [escaped to preserve newlines](https://github.community/t/set-output-truncates-multiline-strings/16852/3).
 
 ```yml
       - id: get-comment-body
