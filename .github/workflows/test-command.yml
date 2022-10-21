@@ -66,7 +66,7 @@ jobs:
           body="$(cat .github/multiline-content.md)"
           delimiter="$(openssl rand -hex 8)"
           echo "body<<$delimiter" >> $GITHUB_OUTPUT
-          echo $body >> $GITHUB_OUTPUT
+          echo "$body" >> $GITHUB_OUTPUT
           echo $delimiter >> $GITHUB_OUTPUT
 
       - name: Create comment
