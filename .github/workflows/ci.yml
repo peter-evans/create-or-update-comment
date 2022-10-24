@@ -104,7 +104,7 @@ jobs:
         uses: ./
         with:
           comment-id: ${{ steps.couc2.outputs.comment-id }}
-          body-file: .github/comment-body-edited.md
+          body-file: .github/comment-body-addition.md
           reactions: eyes
 
   package:
