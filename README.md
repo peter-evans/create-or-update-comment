@@ -54,7 +54,8 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `repository` | The full name of the repository in which to create or update a comment. | Current repository |
 | `issue-number` | The number of the issue or pull request in which to create a comment. | |
 | `comment-id` | The id of the comment to update. | |
-| `body` | The comment body. | |
+| `body` | The comment body. Cannot be used in conjunction with `body-file`. | |
+| `body-file` | The path to a file containing the comment body. Cannot be used in conjunction with `body`. | |
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `reactions` | A comma separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 
@@ -158,22 +159,12 @@ If required, the create and update steps can be separated for greater control.
 
 ### Setting the comment body from a file
 
-This example shows how file content can be read into a variable and passed to the action.
-
 ```yml
-      - id: get-comment-body
-        run: |
-          body="$(cat comment-body.txt)"
-          delimiter="$(openssl rand -hex 8)"
-          echo "body<<$delimiter" >> $GITHUB_OUTPUT
-          echo "$body" >> $GITHUB_OUTPUT
-          echo "$delimiter" >> $GITHUB_OUTPUT
-
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: 1
-          body: ${{ steps.get-comment-body.outputs.body }}
+          body-file: 'comment-body.md'
 ```
 
 ### Using a markdown template

@@ -61,19 +61,11 @@ jobs:
           reactions: hooray
 
       # Test create with body from file
-      - id: get-comment-body
-        run: |
-          body="$(cat .github/multiline-content.md)"
-          delimiter="$(openssl rand -hex 8)"
-          echo "body<<$delimiter" >> $GITHUB_OUTPUT
-          echo "$body" >> $GITHUB_OUTPUT
-          echo "$delimiter" >> $GITHUB_OUTPUT
-
       - name: Create comment
         uses: ./
         with:
           issue-number: 1
-          body: ${{ steps.get-comment-body.outputs.body }}
+          body-file: .github/comment-body.md
 
       # Test create from template
       - name: Render template

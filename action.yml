@@ -11,7 +11,9 @@ inputs:
   comment-id:
     description: 'The id of the comment to update.'
   body:
-    description: 'The comment body.'
+    description: 'The comment body. Cannot be used in conjunction with `body-file`.'
+  body-file:
+    description: 'The path to a file containing the comment body. Cannot be used in conjunction with `body`.'
   edit-mode:
     description: 'The mode when updating a comment, "replace" or "append".'
   reaction-type:
@@ -25,5 +27,5 @@ runs:
   using: 'node16'
   main: 'dist/index.js'
 branding:
-  icon: 'message-square'  
+  icon: 'message-square'
   color: 'gray-dark'
