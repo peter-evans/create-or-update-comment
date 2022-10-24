@@ -9685,6 +9685,7 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const { inspect } = __nccwpck_require__(3837);
+const { readFileSync, existsSync } = __nccwpck_require__(7147);
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 
@@ -9757,6 +9758,8 @@ async function run() {
       issueNumber: core.getInput("issue-number"),
       commentId: core.getInput("comment-id"),
       body: core.getInput("body"),
+      file: core.getInput("file"),
+      fileEncoding: core.getInput("file-encoding") || 'utf8',
       editMode: core.getInput("edit-mode"),
       reactions: core.getInput("reactions")
         ? core.getInput("reactions")
@@ -9777,16 +9780,30 @@ async function run() {
       return;
     }
 
+    if (inputs.file && inputs.body) {
+      core.setFailed("Only one of 'file' or 'body' can be set.");
+      return;
+    }
+
+    if (inputs.file) {
+      if (!existsSync(inputs.file)) {
+        core.setFailed(`File '${inputs.file}' does not exist.`);
+        return;
+      }
+    }
+
     const octokit = github.getOctokit(inputs.token);
 
     if (inputs.commentId) {
       // Edit a comment
-      if (!inputs.body && !inputs.reactions) {
-        core.setFailed("Missing either comment 'body' or 'reactions'.");
+      if (!inputs.body && !inputs.reactions && !inputs.file) {
+        core.setFailed("Missing either comment 'body', 'file', or 'reactions'.");
         return;
       }
 
-      if (inputs.body) {
+      const body = getBodyOrFile(inputs);
+
+      if (body) {
         var commentBody = "";
         if (editMode == "append") {
           // Get the comment body
@@ -9798,7 +9815,7 @@ async function run() {
           commentBody = comment.body + "\n";
         }
 
-        commentBody = commentBody + inputs.body;
+        commentBody = commentBody + body;
         core.debug(`Comment body: ${commentBody}`);
         await octokit.rest.issues.updateComment({
           owner: repo[0],
@@ -9816,15 +9833,18 @@ async function run() {
       }
     } else if (inputs.issueNumber) {
       // Create a comment
-      if (!inputs.body) {
-        core.setFailed("Missing comment 'body'.");
+      const body = getBodyOrFile(inputs);
+
+      if (!body) {
+        core.setFailed("Missing comment 'body' or 'file'.");
         return;
       }
+
       const { data: comment } = await octokit.rest.issues.createComment({
         owner: repo[0],
         repo: repo[1],
         issue_number: inputs.issueNumber,
-        body: inputs.body,
+        body,
       });
       core.info(
         `Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`
@@ -9845,6 +9865,14 @@ async function run() {
     if (error.message == 'Resource not accessible by integration') {
       core.error(`See this action's readme for details about this error`);
     }
+  }
+}
+
+function getBodyOrFile (inputs) {
+  if (inputs.body) {
+    return inputs.body;
+  } else if (inputs.file) {
+    return readFileSync(inputs.file, inputs.fileEncoding);
   }
 }
 
