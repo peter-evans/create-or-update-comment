@@ -11,9 +11,9 @@ inputs:
   comment-id:
     description: 'The id of the comment to update.'
   body:
-    description: 'The comment body.'
-  file:
-    description: 'The path to a file that can be read as `body`. Use either `file` or `body`, but not both.'
+    description: 'The comment body. Cannot be used in conjunction with `body-file`.'
+  body-file:
+    description: 'The path to a file containing the comment body. Cannot be used in conjunction with `body`.'
   edit-mode:
     description: 'The mode when updating a comment, "replace" or "append".'
   reaction-type:

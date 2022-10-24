@@ -9750,6 +9750,16 @@ async function addReactions(octokit, repo, comment_id, reactions) {
   results = undefined;
 }
 
+function getBody(inputs) {
+  if (inputs.body) {
+    return inputs.body;
+  } else if (inputs.bodyFile) {
+    return readFileSync(inputs.bodyFile, 'utf-8');
+  } else {
+    return '';
+  }
+}
+
 async function run() {
   try {
     const inputs = {
@@ -9758,8 +9768,7 @@ async function run() {
       issueNumber: core.getInput("issue-number"),
       commentId: core.getInput("comment-id"),
       body: core.getInput("body"),
-      file: core.getInput("file"),
-      fileEncoding: core.getInput("file-encoding") || 'utf8',
+      bodyFile: core.getInput("body-file"),
       editMode: core.getInput("edit-mode"),
       reactions: core.getInput("reactions")
         ? core.getInput("reactions")
@@ -9780,28 +9789,28 @@ async function run() {
       return;
     }
 
-    if (inputs.file && inputs.body) {
-      core.setFailed("Only one of 'file' or 'body' can be set.");
+    if (inputs.bodyFile && inputs.body) {
+      core.setFailed("Only one of 'body' or 'body-file' can be set.");
       return;
     }
 
-    if (inputs.file) {
-      if (!existsSync(inputs.file)) {
-        core.setFailed(`File '${inputs.file}' does not exist.`);
+    if (inputs.bodyFile) {
+      if (!existsSync(inputs.bodyFile)) {
+        core.setFailed(`File '${inputs.bodyFile}' does not exist.`);
         return;
       }
     }
+
+    const body = getBody(inputs);
 
     const octokit = github.getOctokit(inputs.token);
 
     if (inputs.commentId) {
       // Edit a comment
-      if (!inputs.body && !inputs.reactions && !inputs.file) {
-        core.setFailed("Missing either comment 'body', 'file', or 'reactions'.");
+      if (!body && !inputs.reactions) {
+        core.setFailed("Missing comment 'body', 'body-file', or 'reactions'.");
         return;
       }
-
-      const body = getBodyOrFile(inputs);
 
       if (body) {
         var commentBody = "";
@@ -9833,10 +9842,8 @@ async function run() {
       }
     } else if (inputs.issueNumber) {
       // Create a comment
-      const body = getBodyOrFile(inputs);
-
       if (!body) {
-        core.setFailed("Missing comment 'body' or 'file'.");
+        core.setFailed("Missing comment 'body' or 'body-file'.");
         return;
       }
 
@@ -9865,14 +9872,6 @@ async function run() {
     if (error.message == 'Resource not accessible by integration') {
       core.error(`See this action's readme for details about this error`);
     }
-  }
-}
-
-function getBodyOrFile (inputs) {
-  if (inputs.body) {
-    return inputs.body;
-  } else if (inputs.file) {
-    return readFileSync(inputs.file, inputs.fileEncoding);
   }
 }
 

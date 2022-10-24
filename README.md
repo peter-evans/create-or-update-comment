@@ -54,9 +54,8 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `repository` | The full name of the repository in which to create or update a comment. | Current repository |
 | `issue-number` | The number of the issue or pull request in which to create a comment. | |
 | `comment-id` | The id of the comment to update. | |
-| `body` | The comment body. | |
-| `file` | The path to a file that can be read as `body`. Use either `file` or `body`, but not both. | |
-| `fileEncoding` | The encoding of the file provided as `file`. | `utf8` |
+| `body` | The comment body. Cannot be used in conjunction with `body-file`. | |
+| `body-file` | The path to a file containing the comment body. Cannot be used in conjunction with `body`. | |
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `reactions` | A comma separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 
@@ -165,7 +164,7 @@ If required, the create and update steps can be separated for greater control.
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: 1
-          file: 'comment-body.txt'
+          body-file: 'comment-body.md'
 ```
 
 ### Using a markdown template
