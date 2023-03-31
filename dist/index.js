@@ -220,7 +220,7 @@ function run() {
                 body: core.getInput('body'),
                 bodyFile: core.getInput('body-file'),
                 editMode: core.getInput('edit-mode'),
-                reactions: utils.getInputAsArray(core.getInput('reactions'))
+                reactions: utils.getInputAsArray('reactions')
             };
             core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             if (!['append', 'replace'].includes(inputs.editMode)) {

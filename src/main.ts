@@ -14,7 +14,7 @@ async function run(): Promise<void> {
       body: core.getInput('body'),
       bodyFile: core.getInput('body-file'),
       editMode: core.getInput('edit-mode'),
-      reactions: utils.getInputAsArray(core.getInput('reactions'))
+      reactions: utils.getInputAsArray('reactions')
     }
     core.debug(`Inputs: ${inspect(inputs)}`)
 
