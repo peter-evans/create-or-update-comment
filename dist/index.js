@@ -98,6 +98,16 @@ function addReactions(octokit, owner, repo, commentId, reactions) {
         }
     });
 }
+function appendSeparator(body, separator) {
+    switch (separator) {
+        case 'newline':
+            return body + '\n';
+        case 'space':
+            return body + ' ';
+        default: // none
+            return body;
+    }
+}
 function createOrUpdateComment(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         const [owner, repo] = inputs.repository.split('/');
@@ -118,7 +128,7 @@ function createOrUpdateComment(inputs) {
                         repo: repo,
                         comment_id: inputs.commentId
                     });
-                    commentBody = comment.body + '\n';
+                    commentBody = appendSeparator(comment.body ? comment.body : '', inputs.appendSeparator);
                 }
                 commentBody = commentBody + body;
                 core.debug(`Comment body: ${commentBody}`);
@@ -220,11 +230,16 @@ function run() {
                 body: core.getInput('body'),
                 bodyFile: core.getInput('body-file'),
                 editMode: core.getInput('edit-mode'),
+                appendSeparator: core.getInput('append-separator'),
                 reactions: utils.getInputAsArray('reactions')
             };
             core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             if (!['append', 'replace'].includes(inputs.editMode)) {
                 core.setFailed(`Invalid edit-mode '${inputs.editMode}'.`);
+                return;
+            }
+            if (!['newline', 'space', 'none'].includes(inputs.appendSeparator)) {
+                core.setFailed(`Invalid append-separator '${inputs.appendSeparator}'.`);
                 return;
             }
             if (inputs.bodyFile && inputs.body) {

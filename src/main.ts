@@ -14,12 +14,18 @@ async function run(): Promise<void> {
       body: core.getInput('body'),
       bodyFile: core.getInput('body-file'),
       editMode: core.getInput('edit-mode'),
+      appendSeparator: core.getInput('append-separator'),
       reactions: utils.getInputAsArray('reactions')
     }
     core.debug(`Inputs: ${inspect(inputs)}`)
 
     if (!['append', 'replace'].includes(inputs.editMode)) {
       core.setFailed(`Invalid edit-mode '${inputs.editMode}'.`)
+      return
+    }
+
+    if (!['newline', 'space', 'none'].includes(inputs.appendSeparator)) {
+      core.setFailed(`Invalid append-separator '${inputs.appendSeparator}'.`)
       return
     }
 

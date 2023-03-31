@@ -10,6 +10,7 @@ export interface Inputs {
   body: string
   bodyFile: string
   editMode: string
+  appendSeparator: string
   reactions: string[]
 }
 
@@ -83,6 +84,17 @@ async function addReactions(
   }
 }
 
+function appendSeparator(body: string, separator: string): string {
+  switch (separator) {
+    case 'newline':
+      return body + '\n'
+    case 'space':
+      return body + ' '
+    default: // none
+      return body
+  }
+}
+
 export async function createOrUpdateComment(inputs: Inputs): Promise<void> {
   const [owner, repo] = inputs.repository.split('/')
   const body = getBody(inputs)
@@ -105,7 +117,10 @@ export async function createOrUpdateComment(inputs: Inputs): Promise<void> {
           repo: repo,
           comment_id: inputs.commentId
         })
-        commentBody = comment.body + '\n'
+        commentBody = appendSeparator(
+          comment.body ? comment.body : '',
+          inputs.appendSeparator
+        )
       }
 
       commentBody = commentBody + body
