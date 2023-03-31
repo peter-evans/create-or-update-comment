@@ -6,6 +6,7 @@ inputs:
     default: ${{ github.token }}
   repository:
     description: 'The full name of the repository in which to create or update a comment.'
+    default: ${{ github.repository }}
   issue-number:
     description: 'The number of the issue or pull request in which to create a comment.'
   comment-id:
@@ -16,10 +17,9 @@ inputs:
     description: 'The path to a file containing the comment body. Cannot be used in conjunction with `body`.'
   edit-mode:
     description: 'The mode when updating a comment, "replace" or "append".'
-  reaction-type:
-    description: 'Deprecated in favour of `reactions`'
+    default: 'append'
   reactions:
-    description: 'A comma separated list of reactions to add to the comment.'
+    description: 'A comma or newline separated list of reactions to add to the comment.'
 outputs:
   comment-id:
     description: 'The id of the created comment'

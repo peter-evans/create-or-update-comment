@@ -28,8 +28,10 @@ jobs:
           node-version: 16.x
           cache: npm
       - run: npm ci
+      - run: npm run build
+      - run: npm run format-check
+      - run: npm run lint
       - run: npm run test
-      - run: npm run package
       - uses: actions/upload-artifact@v3
         with:
           name: dist
@@ -91,7 +93,10 @@ jobs:
         uses: ./
         with:
           comment-id: ${{ steps.couc.outputs.comment-id }}
-          reactions: heart, hooray, laugh
+          reactions: |
+            heart
+            hooray
+            laugh
 
       - name: Test create comment from file
         uses: ./
@@ -99,7 +104,8 @@ jobs:
         with:
           issue-number: ${{ needs.build.outputs.issue-number }}
           body-file: .github/comment-body.md
-          reactions: '+1'
+          reactions: |
+            +1
 
       - name: Test update comment from file
         uses: ./
