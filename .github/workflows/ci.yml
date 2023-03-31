@@ -112,7 +112,7 @@ jobs:
         with:
           comment-id: ${{ steps.couc2.outputs.comment-id }}
           body-file: .github/comment-body-addition.md
-          reactions: eyes
+          reactions: eyes, rocket
 
   package:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
