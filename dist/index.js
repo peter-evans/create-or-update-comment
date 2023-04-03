@@ -42,18 +42,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createOrUpdateComment = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const fs_1 = __nccwpck_require__(7147);
-function getBody(inputs) {
-    if (inputs.body) {
-        return inputs.body;
-    }
-    else if (inputs.bodyFile) {
-        return (0, fs_1.readFileSync)(inputs.bodyFile, 'utf-8');
-    }
-    else {
-        return '';
-    }
-}
 const REACTION_TYPES = [
     '+1',
     '-1',
@@ -98,7 +86,7 @@ function addReactions(octokit, owner, repo, commentId, reactions) {
         }
     });
 }
-function appendSeparator(body, separator) {
+function appendSeparatorTo(body, separator) {
     switch (separator) {
         case 'newline':
             return body + '\n';
@@ -108,66 +96,54 @@ function appendSeparator(body, separator) {
             return body;
     }
 }
-function createOrUpdateComment(inputs) {
+function createComment(octokit, owner, repo, issueNumber, body) {
     return __awaiter(this, void 0, void 0, function* () {
-        const [owner, repo] = inputs.repository.split('/');
-        const body = getBody(inputs);
-        const octokit = github.getOctokit(inputs.token);
-        if (inputs.commentId) {
-            // Edit a comment
-            if (!body && !inputs.reactions) {
-                core.setFailed("Missing comment 'body', 'body-file', or 'reactions'.");
-                return;
-            }
-            if (body) {
-                let commentBody = '';
-                if (inputs.editMode == 'append') {
-                    // Get the comment body
-                    const { data: comment } = yield octokit.rest.issues.getComment({
-                        owner: owner,
-                        repo: repo,
-                        comment_id: inputs.commentId
-                    });
-                    commentBody = appendSeparator(comment.body ? comment.body : '', inputs.appendSeparator);
-                }
-                commentBody = commentBody + body;
-                core.debug(`Comment body: ${commentBody}`);
-                yield octokit.rest.issues.updateComment({
+        const { data: comment } = yield octokit.rest.issues.createComment({
+            owner: owner,
+            repo: repo,
+            issue_number: issueNumber,
+            body
+        });
+        core.info(`Created comment id '${comment.id}' on issue '${issueNumber}'.`);
+        return comment.id;
+    });
+}
+function updateComment(octokit, owner, repo, commentId, body, editMode, appendSeparator) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (body) {
+            let commentBody = '';
+            if (editMode == 'append') {
+                // Get the comment body
+                const { data: comment } = yield octokit.rest.issues.getComment({
                     owner: owner,
                     repo: repo,
-                    comment_id: inputs.commentId,
-                    body: commentBody
+                    comment_id: commentId
                 });
-                core.info(`Updated comment id '${inputs.commentId}'.`);
-                core.setOutput('comment-id', inputs.commentId);
+                commentBody = appendSeparatorTo(comment.body ? comment.body : '', appendSeparator);
             }
-            // Set comment reactions
-            if (inputs.reactions) {
-                yield addReactions(octokit, owner, repo, inputs.commentId, inputs.reactions);
-            }
-        }
-        else if (inputs.issueNumber) {
-            // Create a comment
-            if (!body) {
-                core.setFailed("Missing comment 'body' or 'body-file'.");
-                return;
-            }
-            const { data: comment } = yield octokit.rest.issues.createComment({
+            commentBody = commentBody + body;
+            core.debug(`Comment body: ${commentBody}`);
+            yield octokit.rest.issues.updateComment({
                 owner: owner,
                 repo: repo,
-                issue_number: inputs.issueNumber,
-                body
+                comment_id: commentId,
+                body: commentBody
             });
-            core.info(`Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`);
-            core.setOutput('comment-id', comment.id);
-            // Set comment reactions
-            if (inputs.reactions) {
-                yield addReactions(octokit, owner, repo, comment.id, inputs.reactions);
-            }
+            core.info(`Updated comment id '${commentId}'.`);
         }
-        else {
-            core.setFailed("Missing either 'issue-number' or 'comment-id'.");
-            return;
+        return commentId;
+    });
+}
+function createOrUpdateComment(inputs, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const [owner, repo] = inputs.repository.split('/');
+        const octokit = github.getOctokit(inputs.token);
+        const commentId = inputs.commentId
+            ? yield updateComment(octokit, owner, repo, inputs.commentId, body, inputs.editMode, inputs.appendSeparator)
+            : yield createComment(octokit, owner, repo, inputs.issueNumber, body);
+        core.setOutput('comment-id', commentId);
+        if (inputs.reactions) {
+            yield addReactions(octokit, owner, repo, commentId, inputs.reactions);
         }
     });
 }
@@ -219,6 +195,17 @@ const create_or_update_comment_1 = __nccwpck_require__(8007);
 const fs_1 = __nccwpck_require__(7147);
 const util_1 = __nccwpck_require__(3837);
 const utils = __importStar(__nccwpck_require__(918));
+function getBody(inputs) {
+    if (inputs.body) {
+        return inputs.body;
+    }
+    else if (inputs.bodyFile) {
+        return (0, fs_1.readFileSync)(inputs.bodyFile, 'utf-8');
+    }
+    else {
+        return '';
+    }
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -235,24 +222,34 @@ function run() {
             };
             core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             if (!['append', 'replace'].includes(inputs.editMode)) {
-                core.setFailed(`Invalid edit-mode '${inputs.editMode}'.`);
-                return;
+                throw new Error(`Invalid edit-mode '${inputs.editMode}'.`);
             }
             if (!['newline', 'space', 'none'].includes(inputs.appendSeparator)) {
-                core.setFailed(`Invalid append-separator '${inputs.appendSeparator}'.`);
-                return;
+                throw new Error(`Invalid append-separator '${inputs.appendSeparator}'.`);
             }
             if (inputs.bodyFile && inputs.body) {
-                core.setFailed("Only one of 'body' or 'body-file' can be set.");
-                return;
+                throw new Error("Only one of 'body' or 'body-file' can be set.");
             }
             if (inputs.bodyFile) {
                 if (!(0, fs_1.existsSync)(inputs.bodyFile)) {
-                    core.setFailed(`File '${inputs.bodyFile}' does not exist.`);
-                    return;
+                    throw new Error(`File '${inputs.bodyFile}' does not exist.`);
                 }
             }
-            (0, create_or_update_comment_1.createOrUpdateComment)(inputs);
+            const body = getBody(inputs);
+            if (inputs.commentId) {
+                if (!body && !inputs.reactions) {
+                    throw new Error("Missing comment 'body', 'body-file', or 'reactions'.");
+                }
+            }
+            else if (inputs.issueNumber) {
+                if (!body) {
+                    throw new Error("Missing comment 'body' or 'body-file'.");
+                }
+            }
+            else {
+                throw new Error("Missing either 'issue-number' or 'comment-id'.");
+            }
+            (0, create_or_update_comment_1.createOrUpdateComment)(inputs, body);
         }
         catch (error) {
             core.debug((0, util_1.inspect)(error));

@@ -1,8 +1,18 @@
 import * as core from '@actions/core'
 import {Inputs, createOrUpdateComment} from './create-or-update-comment'
-import {existsSync} from 'fs'
+import {existsSync, readFileSync} from 'fs'
 import {inspect} from 'util'
 import * as utils from './utils'
+
+function getBody(inputs) {
+  if (inputs.body) {
+    return inputs.body
+  } else if (inputs.bodyFile) {
+    return readFileSync(inputs.bodyFile, 'utf-8')
+  } else {
+    return ''
+  }
+}
 
 async function run(): Promise<void> {
   try {
@@ -20,28 +30,38 @@ async function run(): Promise<void> {
     core.debug(`Inputs: ${inspect(inputs)}`)
 
     if (!['append', 'replace'].includes(inputs.editMode)) {
-      core.setFailed(`Invalid edit-mode '${inputs.editMode}'.`)
-      return
+      throw new Error(`Invalid edit-mode '${inputs.editMode}'.`)
     }
 
     if (!['newline', 'space', 'none'].includes(inputs.appendSeparator)) {
-      core.setFailed(`Invalid append-separator '${inputs.appendSeparator}'.`)
-      return
+      throw new Error(`Invalid append-separator '${inputs.appendSeparator}'.`)
     }
 
     if (inputs.bodyFile && inputs.body) {
-      core.setFailed("Only one of 'body' or 'body-file' can be set.")
-      return
+      throw new Error("Only one of 'body' or 'body-file' can be set.")
     }
 
     if (inputs.bodyFile) {
       if (!existsSync(inputs.bodyFile)) {
-        core.setFailed(`File '${inputs.bodyFile}' does not exist.`)
-        return
+        throw new Error(`File '${inputs.bodyFile}' does not exist.`)
       }
     }
 
-    createOrUpdateComment(inputs)
+    const body = getBody(inputs)
+
+    if (inputs.commentId) {
+      if (!body && !inputs.reactions) {
+        throw new Error("Missing comment 'body', 'body-file', or 'reactions'.")
+      }
+    } else if (inputs.issueNumber) {
+      if (!body) {
+        throw new Error("Missing comment 'body' or 'body-file'.")
+      }
+    } else {
+      throw new Error("Missing either 'issue-number' or 'comment-id'.")
+    }
+
+    createOrUpdateComment(inputs, body)
   } catch (error) {
     core.debug(inspect(error))
     const errMsg = utils.getErrorMessage(error)

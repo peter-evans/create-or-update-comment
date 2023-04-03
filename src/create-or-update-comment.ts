@@ -1,6 +1,5 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {readFileSync} from 'fs'
 
 export interface Inputs {
   token: string
@@ -12,16 +11,6 @@ export interface Inputs {
   editMode: string
   appendSeparator: string
   reactions: string[]
-}
-
-function getBody(inputs) {
-  if (inputs.body) {
-    return inputs.body
-  } else if (inputs.bodyFile) {
-    return readFileSync(inputs.bodyFile, 'utf-8')
-  } else {
-    return ''
-  }
 }
 
 const REACTION_TYPES = [
@@ -84,7 +73,7 @@ async function addReactions(
   }
 }
 
-function appendSeparator(body: string, separator: string): string {
+function appendSeparatorTo(body: string, separator: string): string {
   switch (separator) {
     case 'newline':
       return body + '\n'
@@ -95,80 +84,81 @@ function appendSeparator(body: string, separator: string): string {
   }
 }
 
-export async function createOrUpdateComment(inputs: Inputs): Promise<void> {
+async function createComment(
+  octokit,
+  owner: string,
+  repo: string,
+  issueNumber: number,
+  body: string
+): Promise<number> {
+  const {data: comment} = await octokit.rest.issues.createComment({
+    owner: owner,
+    repo: repo,
+    issue_number: issueNumber,
+    body
+  })
+  core.info(`Created comment id '${comment.id}' on issue '${issueNumber}'.`)
+  return comment.id
+}
+
+async function updateComment(
+  octokit,
+  owner: string,
+  repo: string,
+  commentId: number,
+  body: string,
+  editMode: string,
+  appendSeparator: string
+): Promise<number> {
+  if (body) {
+    let commentBody = ''
+    if (editMode == 'append') {
+      // Get the comment body
+      const {data: comment} = await octokit.rest.issues.getComment({
+        owner: owner,
+        repo: repo,
+        comment_id: commentId
+      })
+      commentBody = appendSeparatorTo(
+        comment.body ? comment.body : '',
+        appendSeparator
+      )
+    }
+    commentBody = commentBody + body
+    core.debug(`Comment body: ${commentBody}`)
+    await octokit.rest.issues.updateComment({
+      owner: owner,
+      repo: repo,
+      comment_id: commentId,
+      body: commentBody
+    })
+    core.info(`Updated comment id '${commentId}'.`)
+  }
+  return commentId
+}
+
+export async function createOrUpdateComment(
+  inputs: Inputs,
+  body: string
+): Promise<void> {
   const [owner, repo] = inputs.repository.split('/')
-  const body = getBody(inputs)
 
   const octokit = github.getOctokit(inputs.token)
 
-  if (inputs.commentId) {
-    // Edit a comment
-    if (!body && !inputs.reactions) {
-      core.setFailed("Missing comment 'body', 'body-file', or 'reactions'.")
-      return
-    }
-
-    if (body) {
-      let commentBody = ''
-      if (inputs.editMode == 'append') {
-        // Get the comment body
-        const {data: comment} = await octokit.rest.issues.getComment({
-          owner: owner,
-          repo: repo,
-          comment_id: inputs.commentId
-        })
-        commentBody = appendSeparator(
-          comment.body ? comment.body : '',
-          inputs.appendSeparator
-        )
-      }
-
-      commentBody = commentBody + body
-      core.debug(`Comment body: ${commentBody}`)
-      await octokit.rest.issues.updateComment({
-        owner: owner,
-        repo: repo,
-        comment_id: inputs.commentId,
-        body: commentBody
-      })
-      core.info(`Updated comment id '${inputs.commentId}'.`)
-      core.setOutput('comment-id', inputs.commentId)
-    }
-
-    // Set comment reactions
-    if (inputs.reactions) {
-      await addReactions(
+  const commentId = inputs.commentId
+    ? await updateComment(
         octokit,
         owner,
         repo,
         inputs.commentId,
-        inputs.reactions
+        body,
+        inputs.editMode,
+        inputs.appendSeparator
       )
-    }
-  } else if (inputs.issueNumber) {
-    // Create a comment
-    if (!body) {
-      core.setFailed("Missing comment 'body' or 'body-file'.")
-      return
-    }
+    : await createComment(octokit, owner, repo, inputs.issueNumber, body)
 
-    const {data: comment} = await octokit.rest.issues.createComment({
-      owner: owner,
-      repo: repo,
-      issue_number: inputs.issueNumber,
-      body
-    })
-    core.info(
-      `Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`
-    )
-    core.setOutput('comment-id', comment.id)
-
-    // Set comment reactions
-    if (inputs.reactions) {
-      await addReactions(octokit, owner, repo, comment.id, inputs.reactions)
-    }
-  } else {
-    core.setFailed("Missing either 'issue-number' or 'comment-id'.")
-    return
+  core.setOutput('comment-id', commentId)
+  if (inputs.reactions) {
+    await addReactions(octokit, owner, repo, commentId, inputs.reactions)
   }
 }
