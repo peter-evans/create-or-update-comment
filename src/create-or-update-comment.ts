@@ -138,6 +138,37 @@ async function updateComment(
   return commentId
 }
 
+async function getAuthenticatedUser(octokit): Promise<string> {
+  const {data: user} = await octokit.rest.users.getAuthenticated()
+  return user.login
+}
+
+async function getCommentReactionsForUser(
+  octokit,
+  owner: string,
+  repo: string,
+  commentId: number,
+  user: string
+): Promise<string[]> {
+  const userReactions: any[] = []
+  for await (const {data: reactions} of octokit.paginate.iterator(
+    octokit.rest.reactions.listForIssueComment,
+    {
+      owner,
+      repo,
+      comment_id: commentId,
+      per_page: 100
+    }
+  )) {
+    const filteredReactions = reactions.filter(
+      reaction => reaction.user.login === user
+    )
+    core.debug(`Filtered reactions: ${filteredReactions}`)
+    userReactions.push(...filteredReactions)
+  }
+  return userReactions.map(reaction => reaction.content)
+}
+
 export async function createOrUpdateComment(
   inputs: Inputs,
   body: string
@@ -161,6 +192,20 @@ export async function createOrUpdateComment(
   core.setOutput('comment-id', commentId)
   if (inputs.reactions) {
     const reactionsSet = getReactionsSet(inputs.reactions)
+
+    // If inputs.commentId && edit-mode=replace
+    // const authenticatedUser = await getAuthenticatedUser(octokit)
+    // If the current token == 'GITHUB_TOKEN' then the authenticated user is 'github-actions[bot]'
+    const authenticatedUser = 'github-actions[bot]'
+    const userReactions = await getCommentReactionsForUser(
+      octokit,
+      owner,
+      repo,
+      commentId,
+      authenticatedUser
+    )
+    core.debug(`User reactions: ${userReactions}`)
+
     await addReactions(octokit, owner, repo, commentId, reactionsSet)
   }
 }

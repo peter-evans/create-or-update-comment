@@ -38,6 +38,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createOrUpdateComment = void 0;
 const core = __importStar(__nccwpck_require__(2186));
@@ -136,6 +143,46 @@ function updateComment(octokit, owner, repo, commentId, body, editMode, appendSe
         return commentId;
     });
 }
+function getAuthenticatedUser(octokit) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { data: user } = yield octokit.rest.users.getAuthenticated();
+        return user.login;
+    });
+}
+function getCommentReactionsForUser(octokit, owner, repo, commentId, user) {
+    var _a, e_1, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const userReactions = [];
+        try {
+            for (var _d = true, _e = __asyncValues(octokit.paginate.iterator(octokit.rest.reactions.listForIssueComment, {
+                owner,
+                repo,
+                comment_id: commentId,
+                per_page: 100
+            })), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+                _c = _f.value;
+                _d = false;
+                try {
+                    const { data: reactions } = _c;
+                    const filteredReactions = reactions.filter(reaction => reaction.user.login === user);
+                    core.debug(`Filtered reactions: ${filteredReactions}`);
+                    userReactions.push(...filteredReactions);
+                }
+                finally {
+                    _d = true;
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        return userReactions.map(reaction => reaction.content);
+    });
+}
 function createOrUpdateComment(inputs, body) {
     return __awaiter(this, void 0, void 0, function* () {
         const [owner, repo] = inputs.repository.split('/');
@@ -146,6 +193,12 @@ function createOrUpdateComment(inputs, body) {
         core.setOutput('comment-id', commentId);
         if (inputs.reactions) {
             const reactionsSet = getReactionsSet(inputs.reactions);
+            // If inputs.commentId && edit-mode=replace
+            // const authenticatedUser = await getAuthenticatedUser(octokit)
+            // If the current token == 'GITHUB_TOKEN' then the authenticated user is 'github-actions[bot]'
+            const authenticatedUser = 'github-actions[bot]';
+            const userReactions = yield getCommentReactionsForUser(octokit, owner, repo, commentId, authenticatedUser);
+            core.debug(`User reactions: ${userReactions}`);
             yield addReactions(octokit, owner, repo, commentId, reactionsSet);
         }
     });
