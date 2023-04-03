@@ -24,6 +24,24 @@ const REACTION_TYPES = [
   'eyes'
 ]
 
+function getReactionsSet(reactions: string[]): string[] {
+  const reactionsSet = [
+    ...new Set(
+      reactions.filter(item => {
+        if (!REACTION_TYPES.includes(item)) {
+          core.warning(`Skipping invalid reaction '${item}'.`)
+          return false
+        }
+        return true
+      })
+    )
+  ]
+  if (!reactionsSet) {
+    throw new Error(`No valid reactions are contained in '${reactions}'.`)
+  }
+  return reactionsSet
+}
+
 async function addReactions(
   octokit,
   owner: string,
@@ -31,25 +49,8 @@ async function addReactions(
   commentId: number,
   reactions: string[]
 ) {
-  const reactionsSet = [
-    ...new Set(
-      reactions.filter(item => {
-        if (!REACTION_TYPES.includes(item)) {
-          core.info(`Skipping invalid reaction '${item}'.`)
-          return false
-        }
-        return true
-      })
-    )
-  ]
-
-  if (!reactionsSet) {
-    core.setFailed(`No valid reactions are contained in '${reactions}'.`)
-    return false
-  }
-
   const results = await Promise.allSettled(
-    reactionsSet.map(async item => {
+    reactions.map(async item => {
       await octokit.rest.reactions.createForIssueComment({
         owner: owner,
         repo: repo,
@@ -63,11 +64,11 @@ async function addReactions(
   for (let i = 0, l = results.length; i < l; i++) {
     if (results[i].status === 'fulfilled') {
       core.info(
-        `Added reaction '${reactionsSet[i]}' to comment id '${commentId}'.`
+        `Added reaction '${reactions[i]}' to comment id '${commentId}'.`
       )
     } else if (results[i].status === 'rejected') {
-      core.info(
-        `Adding reaction '${reactionsSet[i]}' to comment id '${commentId}' failed.`
+      core.warning(
+        `Adding reaction '${reactions[i]}' to comment id '${commentId}' failed.`
       )
     }
   }
@@ -159,6 +160,7 @@ export async function createOrUpdateComment(
 
   core.setOutput('comment-id', commentId)
   if (inputs.reactions) {
-    await addReactions(octokit, owner, repo, commentId, inputs.reactions)
+    const reactionsSet = getReactionsSet(inputs.reactions)
+    await addReactions(octokit, owner, repo, commentId, reactionsSet)
   }
 }

@@ -52,22 +52,24 @@ const REACTION_TYPES = [
     'rocket',
     'eyes'
 ];
+function getReactionsSet(reactions) {
+    const reactionsSet = [
+        ...new Set(reactions.filter(item => {
+            if (!REACTION_TYPES.includes(item)) {
+                core.warning(`Skipping invalid reaction '${item}'.`);
+                return false;
+            }
+            return true;
+        }))
+    ];
+    if (!reactionsSet) {
+        throw new Error(`No valid reactions are contained in '${reactions}'.`);
+    }
+    return reactionsSet;
+}
 function addReactions(octokit, owner, repo, commentId, reactions) {
     return __awaiter(this, void 0, void 0, function* () {
-        const reactionsSet = [
-            ...new Set(reactions.filter(item => {
-                if (!REACTION_TYPES.includes(item)) {
-                    core.info(`Skipping invalid reaction '${item}'.`);
-                    return false;
-                }
-                return true;
-            }))
-        ];
-        if (!reactionsSet) {
-            core.setFailed(`No valid reactions are contained in '${reactions}'.`);
-            return false;
-        }
-        const results = yield Promise.allSettled(reactionsSet.map((item) => __awaiter(this, void 0, void 0, function* () {
+        const results = yield Promise.allSettled(reactions.map((item) => __awaiter(this, void 0, void 0, function* () {
             yield octokit.rest.reactions.createForIssueComment({
                 owner: owner,
                 repo: repo,
@@ -78,10 +80,10 @@ function addReactions(octokit, owner, repo, commentId, reactions) {
         })));
         for (let i = 0, l = results.length; i < l; i++) {
             if (results[i].status === 'fulfilled') {
-                core.info(`Added reaction '${reactionsSet[i]}' to comment id '${commentId}'.`);
+                core.info(`Added reaction '${reactions[i]}' to comment id '${commentId}'.`);
             }
             else if (results[i].status === 'rejected') {
-                core.info(`Adding reaction '${reactionsSet[i]}' to comment id '${commentId}' failed.`);
+                core.warning(`Adding reaction '${reactions[i]}' to comment id '${commentId}' failed.`);
             }
         }
     });
@@ -143,7 +145,8 @@ function createOrUpdateComment(inputs, body) {
             : yield createComment(octokit, owner, repo, inputs.issueNumber, body);
         core.setOutput('comment-id', commentId);
         if (inputs.reactions) {
-            yield addReactions(octokit, owner, repo, commentId, inputs.reactions);
+            const reactionsSet = getReactionsSet(inputs.reactions);
+            yield addReactions(octokit, owner, repo, commentId, reactionsSet);
         }
     });
 }
