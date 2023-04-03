@@ -49,6 +49,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createOrUpdateComment = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const utils = __importStar(__nccwpck_require__(918));
 const REACTION_TYPES = [
     '+1',
     '-1',
@@ -145,8 +146,22 @@ function updateComment(octokit, owner, repo, commentId, body, editMode, appendSe
 }
 function getAuthenticatedUser(octokit) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data: user } = yield octokit.rest.users.getAuthenticated();
-        return user.login;
+        try {
+            const { data: user } = yield octokit.rest.users.getAuthenticated();
+            return user.login;
+        }
+        catch (error) {
+            if (utils
+                .getErrorMessage(error)
+                .includes('Resource not accessible by integration')) {
+                // In this case we can assume the token is the default GITHUB_TOKEN and
+                // therefore the user is 'github-actions[bot]'.
+                return 'github-actions[bot]';
+            }
+            else {
+                throw error;
+            }
+        }
     });
 }
 function getCommentReactionsForUser(octokit, owner, repo, commentId, user) {
@@ -164,8 +179,9 @@ function getCommentReactionsForUser(octokit, owner, repo, commentId, user) {
                 _d = false;
                 try {
                     const { data: reactions } = _c;
-                    const filteredReactions = reactions.filter(reaction => reaction.user.login === user);
-                    core.debug(`Filtered reactions: ${filteredReactions}`);
+                    const filteredReactions = reactions
+                        .filter(reaction => reaction.user.login === user)
+                        .map(reaction => reaction.content);
                     userReactions.push(...filteredReactions);
                 }
                 finally {
@@ -180,7 +196,7 @@ function getCommentReactionsForUser(octokit, owner, repo, commentId, user) {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        return userReactions.map(reaction => reaction.content);
+        return userReactions;
     });
 }
 function createOrUpdateComment(inputs, body) {
@@ -194,9 +210,7 @@ function createOrUpdateComment(inputs, body) {
         if (inputs.reactions) {
             const reactionsSet = getReactionsSet(inputs.reactions);
             // If inputs.commentId && edit-mode=replace
-            // const authenticatedUser = await getAuthenticatedUser(octokit)
-            // If the current token == 'GITHUB_TOKEN' then the authenticated user is 'github-actions[bot]'
-            const authenticatedUser = 'github-actions[bot]';
+            const authenticatedUser = yield getAuthenticatedUser(octokit);
             const userReactions = yield getCommentReactionsForUser(octokit, owner, repo, commentId, authenticatedUser);
             core.debug(`User reactions: ${userReactions}`);
             yield addReactions(octokit, owner, repo, commentId, reactionsSet);

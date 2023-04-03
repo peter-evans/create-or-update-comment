@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import * as utils from './utils'
 
 export interface Inputs {
   token: string
@@ -139,8 +140,22 @@ async function updateComment(
 }
 
 async function getAuthenticatedUser(octokit): Promise<string> {
-  const {data: user} = await octokit.rest.users.getAuthenticated()
-  return user.login
+  try {
+    const {data: user} = await octokit.rest.users.getAuthenticated()
+    return user.login
+  } catch (error) {
+    if (
+      utils
+        .getErrorMessage(error)
+        .includes('Resource not accessible by integration')
+    ) {
+      // In this case we can assume the token is the default GITHUB_TOKEN and
+      // therefore the user is 'github-actions[bot]'.
+      return 'github-actions[bot]'
+    } else {
+      throw error
+    }
+  }
 }
 
 async function getCommentReactionsForUser(
@@ -150,7 +165,7 @@ async function getCommentReactionsForUser(
   commentId: number,
   user: string
 ): Promise<string[]> {
-  const userReactions: any[] = []
+  const userReactions: string[] = []
   for await (const {data: reactions} of octokit.paginate.iterator(
     octokit.rest.reactions.listForIssueComment,
     {
@@ -160,13 +175,12 @@ async function getCommentReactionsForUser(
       per_page: 100
     }
   )) {
-    const filteredReactions = reactions.filter(
-      reaction => reaction.user.login === user
-    )
-    core.debug(`Filtered reactions: ${filteredReactions}`)
+    const filteredReactions = reactions
+      .filter(reaction => reaction.user.login === user)
+      .map(reaction => reaction.content)
     userReactions.push(...filteredReactions)
   }
-  return userReactions.map(reaction => reaction.content)
+  return userReactions
 }
 
 export async function createOrUpdateComment(
@@ -194,9 +208,7 @@ export async function createOrUpdateComment(
     const reactionsSet = getReactionsSet(inputs.reactions)
 
     // If inputs.commentId && edit-mode=replace
-    // const authenticatedUser = await getAuthenticatedUser(octokit)
-    // If the current token == 'GITHUB_TOKEN' then the authenticated user is 'github-actions[bot]'
-    const authenticatedUser = 'github-actions[bot]'
+    const authenticatedUser = await getAuthenticatedUser(octokit)
     const userReactions = await getCommentReactionsForUser(
       octokit,
       owner,
