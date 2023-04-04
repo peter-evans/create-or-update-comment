@@ -1,0 +1,64 @@
+name: Test v3
+on: workflow_dispatch
+jobs:
+  testCreateOrUpdateComment:
+    runs-on: ubuntu-latest
+    steps:
+      # Test create
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v3-dev
+        id: couc
+        with:
+          token: ${{ secrets.ACTIONS_BOT_TOKEN }}
+          issue-number: 1
+          body: |
+            This is a multi-line test comment
+            - With GitHub **Markdown** :sparkles:
+            - Created by [create-or-update-comment][1]
+
+            [1]: https://github.com/peter-evans/create-or-update-comment
+          reactions: '+1'
+
+      # Test update
+      - name: Update comment
+        uses: peter-evans/create-or-update-comment@v3-dev
+        with:
+          token: ${{ secrets.ACTIONS_BOT_TOKEN }}
+          comment-id: ${{ steps.couc.outputs.comment-id }}
+          body: |
+            **Edit:** Some additional info
+          reactions: eyes
+          reactions-edit-mode: replace
+
+      # Test add reactions
+      - name: Add reactions
+        uses: peter-evans/create-or-update-comment@v3-dev
+        with:
+          token: ${{ secrets.ACTIONS_BOT_TOKEN }}
+          comment-id: ${{ steps.couc.outputs.comment-id }}
+          reactions: heart, hooray, laugh
+
+      # Test create with body from file
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v3-dev
+        with:
+          token: ${{ secrets.ACTIONS_BOT_TOKEN }}
+          issue-number: 1
+          body-file: .github/comment-body.md
+
+      # Test create from template
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@v1.6
+        with:
+          template: .github/comment-template.md
+          vars: |
+            foo: this
+            bar: that
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v3-dev
+        with:
+          token: ${{ secrets.ACTIONS_BOT_TOKEN }}
+          issue-number: 1
+          body: ${{ steps.template.outputs.result }}
