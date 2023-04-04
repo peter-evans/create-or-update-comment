@@ -104,7 +104,7 @@ jobs:
         id: couc2
         with:
           issue-number: ${{ needs.build.outputs.issue-number }}
-          body-file: .github/comment-body.md
+          body-path: .github/comment-body.md
           reactions: |
             +1
 
@@ -112,7 +112,7 @@ jobs:
         uses: ./
         with:
           comment-id: ${{ steps.couc2.outputs.comment-id }}
-          body-file: .github/comment-body-addition.md
+          body-path: .github/comment-body-addition.md
           append-separator: space
           reactions: eyes, rocket
           reactions-edit-mode: replace
