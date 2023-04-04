@@ -9,7 +9,7 @@ export interface Inputs {
   issueNumber: number
   commentId: number
   body: string
-  bodyFile: string
+  bodyPath: string
   editMode: string
   appendSeparator: string
   reactions: string[]

@@ -59,7 +59,7 @@ jobs:
         uses: ./
         with:
           issue-number: 1
-          body-file: .github/comment-body.md
+          body-path: .github/comment-body.md
 
       # Test create from template
       - name: Render template

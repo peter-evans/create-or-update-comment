@@ -297,8 +297,8 @@ function getBody(inputs) {
     if (inputs.body) {
         return inputs.body;
     }
-    else if (inputs.bodyFile) {
-        return (0, fs_1.readFileSync)(inputs.bodyFile, 'utf-8');
+    else if (inputs.bodyPath) {
+        return (0, fs_1.readFileSync)(inputs.bodyPath, 'utf-8');
     }
     else {
         return '';
@@ -313,7 +313,7 @@ function run() {
                 issueNumber: Number(core.getInput('issue-number')),
                 commentId: Number(core.getInput('comment-id')),
                 body: core.getInput('body'),
-                bodyFile: core.getInput('body-file'),
+                bodyPath: core.getInput('body-path') || core.getInput('body-file'),
                 editMode: core.getInput('edit-mode'),
                 appendSeparator: core.getInput('append-separator'),
                 reactions: utils.getInputAsArray('reactions'),
@@ -329,23 +329,23 @@ function run() {
             if (!['newline', 'space', 'none'].includes(inputs.appendSeparator)) {
                 throw new Error(`Invalid append-separator '${inputs.appendSeparator}'.`);
             }
-            if (inputs.bodyFile && inputs.body) {
-                throw new Error("Only one of 'body' or 'body-file' can be set.");
+            if (inputs.bodyPath && inputs.body) {
+                throw new Error("Only one of 'body' or 'body-path' can be set.");
             }
-            if (inputs.bodyFile) {
-                if (!(0, fs_1.existsSync)(inputs.bodyFile)) {
-                    throw new Error(`File '${inputs.bodyFile}' does not exist.`);
+            if (inputs.bodyPath) {
+                if (!(0, fs_1.existsSync)(inputs.bodyPath)) {
+                    throw new Error(`File '${inputs.bodyPath}' does not exist.`);
                 }
             }
             const body = getBody(inputs);
             if (inputs.commentId) {
                 if (!body && !inputs.reactions) {
-                    throw new Error("Missing comment 'body', 'body-file', or 'reactions'.");
+                    throw new Error("Missing comment 'body', 'body-path', or 'reactions'.");
                 }
             }
             else if (inputs.issueNumber) {
                 if (!body) {
-                    throw new Error("Missing comment 'body' or 'body-file'.");
+                    throw new Error("Missing comment 'body' or 'body-path'.");
                 }
             }
             else {

@@ -55,8 +55,8 @@ A GitHub action to create or update an issue or pull request comment.
 | `repository` | The full name of the repository in which to create or update a comment. | Current repository |
 | `issue-number` | The number of the issue or pull request in which to create a comment. | |
 | `comment-id` | The id of the comment to update. | |
-| `body` | The comment body. Cannot be used in conjunction with `body-file`. | |
-| `body-file` | The path to a file containing the comment body. Cannot be used in conjunction with `body`. | |
+| `body` | The comment body. Cannot be used in conjunction with `body-path`. | |
+| `body-path` | The path to a file containing the comment body. Cannot be used in conjunction with `body`. | |
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `append-separator` | The separator to use when appending to an existing comment. (`newline`, `space`, `none`) | `newline` |
 | `reactions` | A comma or newline separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
@@ -167,7 +167,7 @@ If required, the create and update steps can be separated for greater control.
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: 1
-          body-file: 'comment-body.md'
+          body-path: 'comment-body.md'
 ```
 
 ### Using a markdown template

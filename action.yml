@@ -12,9 +12,11 @@ inputs:
   comment-id:
     description: 'The id of the comment to update.'
   body:
-    description: 'The comment body. Cannot be used in conjunction with `body-file`.'
-  body-file:
+    description: 'The comment body. Cannot be used in conjunction with `body-path`.'
+  body-path:
     description: 'The path to a file containing the comment body. Cannot be used in conjunction with `body`.'
+  body-file:
+    description: 'Deprecated in favour of `body-path`.'
   edit-mode:
     description: 'The mode when updating a comment, "replace" or "append".'
     default: 'append'
