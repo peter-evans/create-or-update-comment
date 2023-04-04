@@ -54,13 +54,6 @@ jobs:
           comment-id: ${{ steps.couc.outputs.comment-id }}
           reactions: heart, hooray, laugh
 
-      - name: Add reaction
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
-          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          reactions: hooray
-
       # Test create with body from file
       - name: Create comment
         uses: ./
@@ -83,3 +76,10 @@ jobs:
         with:
           issue-number: 1
           body: ${{ steps.template.outputs.result }}
+
+      - name: Add reaction
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          reactions: hooray
