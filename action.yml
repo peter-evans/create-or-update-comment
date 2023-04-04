@@ -23,6 +23,9 @@ inputs:
     default: 'newline'
   reactions:
     description: 'A comma or newline separated list of reactions to add to the comment.'
+  reactions-edit-mode:
+    description: 'The mode when updating comment reactions, "replace" or "append".'
+    default: 'append'
 outputs:
   comment-id:
     description: 'The id of the created comment'

@@ -13,6 +13,7 @@ export interface Inputs {
   editMode: string
   appendSeparator: string
   reactions: string[]
+  reactionsEditMode: string
 }
 
 const REACTION_TYPES = [
@@ -242,25 +243,27 @@ export async function createOrUpdateComment(
     : await createComment(octokit, owner, repo, inputs.issueNumber, body)
 
   core.setOutput('comment-id', commentId)
+
   if (inputs.reactions) {
     const reactionsSet = getReactionsSet(inputs.reactions)
 
-    // If inputs.commentId && edit-mode=replace
-    const authenticatedUser = await getAuthenticatedUser(octokit)
-    const userReactions = await getCommentReactionsForUser(
-      octokit,
-      owner,
-      repo,
-      commentId,
-      authenticatedUser
-    )
-    core.debug(inspect(userReactions))
+    // Remove reactions if reactionsEditMode is 'replace'
+    if (inputs.commentId && inputs.reactionsEditMode === 'replace') {
+      const authenticatedUser = await getAuthenticatedUser(octokit)
+      const userReactions = await getCommentReactionsForUser(
+        octokit,
+        owner,
+        repo,
+        commentId,
+        authenticatedUser
+      )
+      core.debug(inspect(userReactions))
 
-    const reactionsToRemove = userReactions.filter(
-      reaction => !reactionsSet.includes(reaction.content)
-    )
-
-    await removeReactions(octokit, owner, repo, commentId, reactionsToRemove)
+      const reactionsToRemove = userReactions.filter(
+        reaction => !reactionsSet.includes(reaction.content)
+      )
+      await removeReactions(octokit, owner, repo, commentId, reactionsToRemove)
+    }
 
     await addReactions(octokit, owner, repo, commentId, reactionsSet)
   }

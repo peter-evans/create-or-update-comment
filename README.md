@@ -62,6 +62,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
 | `append-separator` | The separator to use when appending to an existing comment. (`newline`, `space`, `none`) | `newline` |
 | `reactions` | A comma or newline separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
+| `reactions-edit-mode` | The mode when updating comment reactions, `replace` or `append`. | `append` |
 
 Note: In *public* repositories this action does not work in `pull_request` workflows when triggered by forks.
 Any attempt will be met with the error, `Resource not accessible by integration`.

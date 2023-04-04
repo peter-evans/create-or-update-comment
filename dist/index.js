@@ -233,12 +233,14 @@ function createOrUpdateComment(inputs, body) {
         core.setOutput('comment-id', commentId);
         if (inputs.reactions) {
             const reactionsSet = getReactionsSet(inputs.reactions);
-            // If inputs.commentId && edit-mode=replace
-            const authenticatedUser = yield getAuthenticatedUser(octokit);
-            const userReactions = yield getCommentReactionsForUser(octokit, owner, repo, commentId, authenticatedUser);
-            core.debug((0, util_1.inspect)(userReactions));
-            const reactionsToRemove = userReactions.filter(reaction => !reactionsSet.includes(reaction.content));
-            yield removeReactions(octokit, owner, repo, commentId, reactionsToRemove);
+            // Remove reactions if reactionsEditMode is 'replace'
+            if (inputs.commentId && inputs.reactionsEditMode === 'replace') {
+                const authenticatedUser = yield getAuthenticatedUser(octokit);
+                const userReactions = yield getCommentReactionsForUser(octokit, owner, repo, commentId, authenticatedUser);
+                core.debug((0, util_1.inspect)(userReactions));
+                const reactionsToRemove = userReactions.filter(reaction => !reactionsSet.includes(reaction.content));
+                yield removeReactions(octokit, owner, repo, commentId, reactionsToRemove);
+            }
             yield addReactions(octokit, owner, repo, commentId, reactionsSet);
         }
     });
@@ -314,11 +316,15 @@ function run() {
                 bodyFile: core.getInput('body-file'),
                 editMode: core.getInput('edit-mode'),
                 appendSeparator: core.getInput('append-separator'),
-                reactions: utils.getInputAsArray('reactions')
+                reactions: utils.getInputAsArray('reactions'),
+                reactionsEditMode: core.getInput('reactions-edit-mode')
             };
             core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             if (!['append', 'replace'].includes(inputs.editMode)) {
                 throw new Error(`Invalid edit-mode '${inputs.editMode}'.`);
+            }
+            if (!['append', 'replace'].includes(inputs.reactionsEditMode)) {
+                throw new Error(`Invalid reactions edit-mode '${inputs.reactionsEditMode}'.`);
             }
             if (!['newline', 'space', 'none'].includes(inputs.appendSeparator)) {
                 throw new Error(`Invalid append-separator '${inputs.appendSeparator}'.`);

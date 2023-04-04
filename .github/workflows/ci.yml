@@ -88,6 +88,7 @@ jobs:
           body: |
             **Edit:** Some additional info
           reactions: eyes
+          reactions-edit-mode: replace
 
       - name: Test add reactions
         uses: ./
@@ -114,6 +115,7 @@ jobs:
           body-file: .github/comment-body-addition.md
           append-separator: space
           reactions: eyes, rocket
+          reactions-edit-mode: replace
 
   package:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

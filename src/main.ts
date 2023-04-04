@@ -25,12 +25,19 @@ async function run(): Promise<void> {
       bodyFile: core.getInput('body-file'),
       editMode: core.getInput('edit-mode'),
       appendSeparator: core.getInput('append-separator'),
-      reactions: utils.getInputAsArray('reactions')
+      reactions: utils.getInputAsArray('reactions'),
+      reactionsEditMode: core.getInput('reactions-edit-mode')
     }
     core.debug(`Inputs: ${inspect(inputs)}`)
 
     if (!['append', 'replace'].includes(inputs.editMode)) {
       throw new Error(`Invalid edit-mode '${inputs.editMode}'.`)
+    }
+
+    if (!['append', 'replace'].includes(inputs.reactionsEditMode)) {
+      throw new Error(
+        `Invalid reactions edit-mode '${inputs.reactionsEditMode}'.`
+      )
     }
 
     if (!['newline', 'space', 'none'].includes(inputs.appendSeparator)) {
