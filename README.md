@@ -4,8 +4,6 @@
 
 A GitHub action to create or update an issue or pull request comment.
 
-This action was created to help facilitate a GitHub Actions "ChatOps" solution in conjunction with [slash-command-dispatch](https://github.com/peter-evans/slash-command-dispatch) action.
-
 ## Usage
 
 ### Add a comment to an issue or pull request
