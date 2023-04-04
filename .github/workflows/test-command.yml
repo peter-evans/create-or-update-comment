@@ -45,6 +45,7 @@ jobs:
           body: |
             **Edit:** Some additional info
           reactions: eyes
+          reactions-edit-mode: replace
 
       # Test add reactions
       - name: Add reactions
