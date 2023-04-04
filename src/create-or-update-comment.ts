@@ -52,17 +52,16 @@ async function addReactions(
   reactions: string[]
 ) {
   const results = await Promise.allSettled(
-    reactions.map(async item => {
+    reactions.map(async reaction => {
       await octokit.rest.reactions.createForIssueComment({
         owner: owner,
         repo: repo,
         comment_id: commentId,
-        content: item
+        content: reaction
       })
-      core.info(`Setting '${item}' reaction on comment.`)
+      core.info(`Setting '${reaction}' reaction on comment.`)
     })
   )
-
   for (let i = 0, l = results.length; i < l; i++) {
     if (results[i].status === 'fulfilled') {
       core.info(
@@ -71,6 +70,37 @@ async function addReactions(
     } else if (results[i].status === 'rejected') {
       core.warning(
         `Adding reaction '${reactions[i]}' to comment id '${commentId}' failed.`
+      )
+    }
+  }
+}
+
+async function removeReactions(
+  octokit,
+  owner: string,
+  repo: string,
+  commentId: number,
+  reactions: Reaction[]
+) {
+  const results = await Promise.allSettled(
+    reactions.map(async reaction => {
+      await octokit.rest.reactions.deleteForIssueComment({
+        owner: owner,
+        repo: repo,
+        comment_id: commentId,
+        reaction_id: reaction.id
+      })
+      core.info(`Removing '${reaction.content}' reaction from comment.`)
+    })
+  )
+  for (let i = 0, l = results.length; i < l; i++) {
+    if (results[i].status === 'fulfilled') {
+      core.info(
+        `Removed reaction '${reactions[i].content}' from comment id '${commentId}'.`
+      )
+    } else if (results[i].status === 'rejected') {
+      core.warning(
+        `Removing reaction '${reactions[i].content}' from comment id '${commentId}' failed.`
       )
     }
   }
@@ -225,6 +255,12 @@ export async function createOrUpdateComment(
       authenticatedUser
     )
     core.debug(inspect(userReactions))
+
+    const reactionsToRemove = userReactions.filter(
+      reaction => !reactionsSet.includes(reaction.content)
+    )
+
+    await removeReactions(octokit, owner, repo, commentId, reactionsToRemove)
 
     await addReactions(octokit, owner, repo, commentId, reactionsSet)
   }

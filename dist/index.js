@@ -78,14 +78,14 @@ function getReactionsSet(reactions) {
 }
 function addReactions(octokit, owner, repo, commentId, reactions) {
     return __awaiter(this, void 0, void 0, function* () {
-        const results = yield Promise.allSettled(reactions.map((item) => __awaiter(this, void 0, void 0, function* () {
+        const results = yield Promise.allSettled(reactions.map((reaction) => __awaiter(this, void 0, void 0, function* () {
             yield octokit.rest.reactions.createForIssueComment({
                 owner: owner,
                 repo: repo,
                 comment_id: commentId,
-                content: item
+                content: reaction
             });
-            core.info(`Setting '${item}' reaction on comment.`);
+            core.info(`Setting '${reaction}' reaction on comment.`);
         })));
         for (let i = 0, l = results.length; i < l; i++) {
             if (results[i].status === 'fulfilled') {
@@ -93,6 +93,27 @@ function addReactions(octokit, owner, repo, commentId, reactions) {
             }
             else if (results[i].status === 'rejected') {
                 core.warning(`Adding reaction '${reactions[i]}' to comment id '${commentId}' failed.`);
+            }
+        }
+    });
+}
+function removeReactions(octokit, owner, repo, commentId, reactions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const results = yield Promise.allSettled(reactions.map((reaction) => __awaiter(this, void 0, void 0, function* () {
+            yield octokit.rest.reactions.deleteForIssueComment({
+                owner: owner,
+                repo: repo,
+                comment_id: commentId,
+                reaction_id: reaction.id
+            });
+            core.info(`Removing '${reaction.content}' reaction from comment.`);
+        })));
+        for (let i = 0, l = results.length; i < l; i++) {
+            if (results[i].status === 'fulfilled') {
+                core.info(`Removed reaction '${reactions[i].content}' from comment id '${commentId}'.`);
+            }
+            else if (results[i].status === 'rejected') {
+                core.warning(`Removing reaction '${reactions[i].content}' from comment id '${commentId}' failed.`);
             }
         }
     });
@@ -216,6 +237,8 @@ function createOrUpdateComment(inputs, body) {
             const authenticatedUser = yield getAuthenticatedUser(octokit);
             const userReactions = yield getCommentReactionsForUser(octokit, owner, repo, commentId, authenticatedUser);
             core.debug((0, util_1.inspect)(userReactions));
+            const reactionsToRemove = userReactions.filter(reaction => !reactionsSet.includes(reaction.content));
+            yield removeReactions(octokit, owner, repo, commentId, reactionsToRemove);
             yield addReactions(octokit, owner, repo, commentId, reactionsSet);
         }
     });
