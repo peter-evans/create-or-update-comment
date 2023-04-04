@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as utils from './utils'
+import {inspect} from 'util'
 
 export interface Inputs {
   token: string
@@ -158,14 +159,19 @@ async function getAuthenticatedUser(octokit): Promise<string> {
   }
 }
 
+type Reaction = {
+  id: number
+  content: string
+}
+
 async function getCommentReactionsForUser(
   octokit,
   owner: string,
   repo: string,
   commentId: number,
   user: string
-): Promise<string[]> {
-  const userReactions: string[] = []
+): Promise<Reaction[]> {
+  const userReactions: Reaction[] = []
   for await (const {data: reactions} of octokit.paginate.iterator(
     octokit.rest.reactions.listForIssueComment,
     {
@@ -175,9 +181,11 @@ async function getCommentReactionsForUser(
       per_page: 100
     }
   )) {
-    const filteredReactions = reactions
+    const filteredReactions: Reaction[] = reactions
       .filter(reaction => reaction.user.login === user)
-      .map(reaction => reaction.content)
+      .map(reaction => {
+        return {id: reaction.id, content: reaction.content}
+      })
     userReactions.push(...filteredReactions)
   }
   return userReactions
@@ -216,7 +224,7 @@ export async function createOrUpdateComment(
       commentId,
       authenticatedUser
     )
-    core.debug(`User reactions: ${userReactions}`)
+    core.debug(inspect(userReactions))
 
     await addReactions(octokit, owner, repo, commentId, reactionsSet)
   }

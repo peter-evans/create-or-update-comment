@@ -50,6 +50,7 @@ exports.createOrUpdateComment = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const utils = __importStar(__nccwpck_require__(918));
+const util_1 = __nccwpck_require__(3837);
 const REACTION_TYPES = [
     '+1',
     '-1',
@@ -181,7 +182,9 @@ function getCommentReactionsForUser(octokit, owner, repo, commentId, user) {
                     const { data: reactions } = _c;
                     const filteredReactions = reactions
                         .filter(reaction => reaction.user.login === user)
-                        .map(reaction => reaction.content);
+                        .map(reaction => {
+                        return { id: reaction.id, content: reaction.content };
+                    });
                     userReactions.push(...filteredReactions);
                 }
                 finally {
@@ -212,7 +215,7 @@ function createOrUpdateComment(inputs, body) {
             // If inputs.commentId && edit-mode=replace
             const authenticatedUser = yield getAuthenticatedUser(octokit);
             const userReactions = yield getCommentReactionsForUser(octokit, owner, repo, commentId, authenticatedUser);
-            core.debug(`User reactions: ${userReactions}`);
+            core.debug((0, util_1.inspect)(userReactions));
             yield addReactions(octokit, owner, repo, commentId, reactionsSet);
         }
     });
