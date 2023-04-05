@@ -28,8 +28,10 @@ jobs:
           node-version: 16.x
           cache: npm
       - run: npm ci
+      - run: npm run build
+      - run: npm run format-check
+      - run: npm run lint
       - run: npm run test
-      - run: npm run package
       - uses: actions/upload-artifact@v3
         with:
           name: dist
@@ -86,27 +88,34 @@ jobs:
           body: |
             **Edit:** Some additional info
           reactions: eyes
+          reactions-edit-mode: replace
 
       - name: Test add reactions
         uses: ./
         with:
           comment-id: ${{ steps.couc.outputs.comment-id }}
-          reactions: heart, hooray, laugh
+          reactions: |
+            heart
+            hooray
+            laugh
 
       - name: Test create comment from file
         uses: ./
         id: couc2
         with:
           issue-number: ${{ needs.build.outputs.issue-number }}
-          body-file: .github/comment-body.md
-          reactions: '+1'
+          body-path: .github/comment-body.md
+          reactions: |
+            +1
 
       - name: Test update comment from file
         uses: ./
         with:
           comment-id: ${{ steps.couc2.outputs.comment-id }}
-          body-file: .github/comment-body-addition.md
-          reactions: eyes
+          body-path: .github/comment-body-addition.md
+          append-separator: space
+          reactions: eyes, rocket
+          reactions-edit-mode: replace
 
   package:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

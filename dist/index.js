@@ -1,6 +1,425 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 8007:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createOrUpdateComment = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
+const utils = __importStar(__nccwpck_require__(918));
+const util_1 = __nccwpck_require__(3837);
+const REACTION_TYPES = [
+    '+1',
+    '-1',
+    'laugh',
+    'confused',
+    'heart',
+    'hooray',
+    'rocket',
+    'eyes'
+];
+function getReactionsSet(reactions) {
+    const reactionsSet = [
+        ...new Set(reactions.filter(item => {
+            if (!REACTION_TYPES.includes(item)) {
+                core.warning(`Skipping invalid reaction '${item}'.`);
+                return false;
+            }
+            return true;
+        }))
+    ];
+    if (!reactionsSet) {
+        throw new Error(`No valid reactions are contained in '${reactions}'.`);
+    }
+    return reactionsSet;
+}
+function addReactions(octokit, owner, repo, commentId, reactions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const results = yield Promise.allSettled(reactions.map((reaction) => __awaiter(this, void 0, void 0, function* () {
+            yield octokit.rest.reactions.createForIssueComment({
+                owner: owner,
+                repo: repo,
+                comment_id: commentId,
+                content: reaction
+            });
+            core.info(`Setting '${reaction}' reaction on comment.`);
+        })));
+        for (let i = 0, l = results.length; i < l; i++) {
+            if (results[i].status === 'fulfilled') {
+                core.info(`Added reaction '${reactions[i]}' to comment id '${commentId}'.`);
+            }
+            else if (results[i].status === 'rejected') {
+                core.warning(`Adding reaction '${reactions[i]}' to comment id '${commentId}' failed.`);
+            }
+        }
+    });
+}
+function removeReactions(octokit, owner, repo, commentId, reactions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const results = yield Promise.allSettled(reactions.map((reaction) => __awaiter(this, void 0, void 0, function* () {
+            yield octokit.rest.reactions.deleteForIssueComment({
+                owner: owner,
+                repo: repo,
+                comment_id: commentId,
+                reaction_id: reaction.id
+            });
+            core.info(`Removing '${reaction.content}' reaction from comment.`);
+        })));
+        for (let i = 0, l = results.length; i < l; i++) {
+            if (results[i].status === 'fulfilled') {
+                core.info(`Removed reaction '${reactions[i].content}' from comment id '${commentId}'.`);
+            }
+            else if (results[i].status === 'rejected') {
+                core.warning(`Removing reaction '${reactions[i].content}' from comment id '${commentId}' failed.`);
+            }
+        }
+    });
+}
+function appendSeparatorTo(body, separator) {
+    switch (separator) {
+        case 'newline':
+            return body + '\n';
+        case 'space':
+            return body + ' ';
+        default: // none
+            return body;
+    }
+}
+function createComment(octokit, owner, repo, issueNumber, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { data: comment } = yield octokit.rest.issues.createComment({
+            owner: owner,
+            repo: repo,
+            issue_number: issueNumber,
+            body
+        });
+        core.info(`Created comment id '${comment.id}' on issue '${issueNumber}'.`);
+        return comment.id;
+    });
+}
+function updateComment(octokit, owner, repo, commentId, body, editMode, appendSeparator) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (body) {
+            let commentBody = '';
+            if (editMode == 'append') {
+                // Get the comment body
+                const { data: comment } = yield octokit.rest.issues.getComment({
+                    owner: owner,
+                    repo: repo,
+                    comment_id: commentId
+                });
+                commentBody = appendSeparatorTo(comment.body ? comment.body : '', appendSeparator);
+            }
+            commentBody = commentBody + body;
+            core.debug(`Comment body: ${commentBody}`);
+            yield octokit.rest.issues.updateComment({
+                owner: owner,
+                repo: repo,
+                comment_id: commentId,
+                body: commentBody
+            });
+            core.info(`Updated comment id '${commentId}'.`);
+        }
+        return commentId;
+    });
+}
+function getAuthenticatedUser(octokit) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { data: user } = yield octokit.rest.users.getAuthenticated();
+            return user.login;
+        }
+        catch (error) {
+            if (utils
+                .getErrorMessage(error)
+                .includes('Resource not accessible by integration')) {
+                // In this case we can assume the token is the default GITHUB_TOKEN and
+                // therefore the user is 'github-actions[bot]'.
+                return 'github-actions[bot]';
+            }
+            else {
+                throw error;
+            }
+        }
+    });
+}
+function getCommentReactionsForUser(octokit, owner, repo, commentId, user) {
+    var _a, e_1, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const userReactions = [];
+        try {
+            for (var _d = true, _e = __asyncValues(octokit.paginate.iterator(octokit.rest.reactions.listForIssueComment, {
+                owner,
+                repo,
+                comment_id: commentId,
+                per_page: 100
+            })), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+                _c = _f.value;
+                _d = false;
+                try {
+                    const { data: reactions } = _c;
+                    const filteredReactions = reactions
+                        .filter(reaction => reaction.user.login === user)
+                        .map(reaction => {
+                        return { id: reaction.id, content: reaction.content };
+                    });
+                    userReactions.push(...filteredReactions);
+                }
+                finally {
+                    _d = true;
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        return userReactions;
+    });
+}
+function createOrUpdateComment(inputs, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const [owner, repo] = inputs.repository.split('/');
+        const octokit = github.getOctokit(inputs.token);
+        const commentId = inputs.commentId
+            ? yield updateComment(octokit, owner, repo, inputs.commentId, body, inputs.editMode, inputs.appendSeparator)
+            : yield createComment(octokit, owner, repo, inputs.issueNumber, body);
+        core.setOutput('comment-id', commentId);
+        if (inputs.reactions) {
+            const reactionsSet = getReactionsSet(inputs.reactions);
+            // Remove reactions if reactionsEditMode is 'replace'
+            if (inputs.commentId && inputs.reactionsEditMode === 'replace') {
+                const authenticatedUser = yield getAuthenticatedUser(octokit);
+                const userReactions = yield getCommentReactionsForUser(octokit, owner, repo, commentId, authenticatedUser);
+                core.debug((0, util_1.inspect)(userReactions));
+                const reactionsToRemove = userReactions.filter(reaction => !reactionsSet.includes(reaction.content));
+                yield removeReactions(octokit, owner, repo, commentId, reactionsToRemove);
+            }
+            yield addReactions(octokit, owner, repo, commentId, reactionsSet);
+        }
+    });
+}
+exports.createOrUpdateComment = createOrUpdateComment;
+
+
+/***/ }),
+
+/***/ 3109:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const create_or_update_comment_1 = __nccwpck_require__(8007);
+const fs_1 = __nccwpck_require__(7147);
+const util_1 = __nccwpck_require__(3837);
+const utils = __importStar(__nccwpck_require__(918));
+function getBody(inputs) {
+    if (inputs.body) {
+        return inputs.body;
+    }
+    else if (inputs.bodyPath) {
+        return (0, fs_1.readFileSync)(inputs.bodyPath, 'utf-8');
+    }
+    else {
+        return '';
+    }
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const inputs = {
+                token: core.getInput('token'),
+                repository: core.getInput('repository'),
+                issueNumber: Number(core.getInput('issue-number')),
+                commentId: Number(core.getInput('comment-id')),
+                body: core.getInput('body'),
+                bodyPath: core.getInput('body-path') || core.getInput('body-file'),
+                editMode: core.getInput('edit-mode'),
+                appendSeparator: core.getInput('append-separator'),
+                reactions: utils.getInputAsArray('reactions'),
+                reactionsEditMode: core.getInput('reactions-edit-mode')
+            };
+            core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
+            if (!['append', 'replace'].includes(inputs.editMode)) {
+                throw new Error(`Invalid edit-mode '${inputs.editMode}'.`);
+            }
+            if (!['append', 'replace'].includes(inputs.reactionsEditMode)) {
+                throw new Error(`Invalid reactions edit-mode '${inputs.reactionsEditMode}'.`);
+            }
+            if (!['newline', 'space', 'none'].includes(inputs.appendSeparator)) {
+                throw new Error(`Invalid append-separator '${inputs.appendSeparator}'.`);
+            }
+            if (inputs.bodyPath && inputs.body) {
+                throw new Error("Only one of 'body' or 'body-path' can be set.");
+            }
+            if (inputs.bodyPath) {
+                if (!(0, fs_1.existsSync)(inputs.bodyPath)) {
+                    throw new Error(`File '${inputs.bodyPath}' does not exist.`);
+                }
+            }
+            const body = getBody(inputs);
+            if (inputs.commentId) {
+                if (!body && !inputs.reactions) {
+                    throw new Error("Missing comment 'body', 'body-path', or 'reactions'.");
+                }
+            }
+            else if (inputs.issueNumber) {
+                if (!body) {
+                    throw new Error("Missing comment 'body' or 'body-path'.");
+                }
+            }
+            else {
+                throw new Error("Missing either 'issue-number' or 'comment-id'.");
+            }
+            (0, create_or_update_comment_1.createOrUpdateComment)(inputs, body);
+        }
+        catch (error) {
+            core.debug((0, util_1.inspect)(error));
+            const errMsg = utils.getErrorMessage(error);
+            core.setFailed(errMsg);
+            if (errMsg == 'Resource not accessible by integration') {
+                core.error(`See this action's readme for details about this error`);
+            }
+        }
+    });
+}
+run();
+
+
+/***/ }),
+
+/***/ 918:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getErrorMessage = exports.getStringAsArray = exports.getInputAsArray = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+function getInputAsArray(name, options) {
+    return getStringAsArray(core.getInput(name, options));
+}
+exports.getInputAsArray = getInputAsArray;
+function getStringAsArray(str) {
+    return str
+        .split(/[\n,]+/)
+        .map(s => s.trim())
+        .filter(x => x !== '');
+}
+exports.getStringAsArray = getStringAsArray;
+function getErrorMessage(error) {
+    if (error instanceof Error)
+        return error.message;
+    return String(error);
+}
+exports.getErrorMessage = getErrorMessage;
+
+
+/***/ }),
+
 /***/ 7351:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -1942,6 +2361,10 @@ function checkBypass(reqUrl) {
     if (!reqUrl.hostname) {
         return false;
     }
+    const reqHost = reqUrl.hostname;
+    if (isLoopbackAddress(reqHost)) {
+        return true;
+    }
     const noProxy = process.env['no_proxy'] || process.env['NO_PROXY'] || '';
     if (!noProxy) {
         return false;
@@ -1967,13 +2390,24 @@ function checkBypass(reqUrl) {
         .split(',')
         .map(x => x.trim().toUpperCase())
         .filter(x => x)) {
-        if (upperReqHosts.some(x => x === upperNoProxyItem)) {
+        if (upperNoProxyItem === '*' ||
+            upperReqHosts.some(x => x === upperNoProxyItem ||
+                x.endsWith(`.${upperNoProxyItem}`) ||
+                (upperNoProxyItem.startsWith('.') &&
+                    x.endsWith(`${upperNoProxyItem}`)))) {
             return true;
         }
     }
     return false;
 }
 exports.checkBypass = checkBypass;
+function isLoopbackAddress(host) {
+    const hostLower = host.toLowerCase();
+    return (hostLower === 'localhost' ||
+        hostLower.startsWith('127.') ||
+        hostLower.startsWith('[::1]') ||
+        hostLower.startsWith('[0:0:0:0:0:0:0:1]'));
+}
 //# sourceMappingURL=proxy.js.map
 
 /***/ }),
@@ -6023,6 +6457,20 @@ const isDomainOrSubdomain = function isDomainOrSubdomain(destination, original) 
 };
 
 /**
+ * isSameProtocol reports whether the two provided URLs use the same protocol.
+ *
+ * Both domains must already be in canonical form.
+ * @param {string|URL} original
+ * @param {string|URL} destination
+ */
+const isSameProtocol = function isSameProtocol(destination, original) {
+	const orig = new URL$1(original).protocol;
+	const dest = new URL$1(destination).protocol;
+
+	return orig === dest;
+};
+
+/**
  * Fetch function
  *
  * @param   Mixed    url   Absolute url or Request instance
@@ -6053,7 +6501,7 @@ function fetch(url, opts) {
 			let error = new AbortError('The user aborted a request.');
 			reject(error);
 			if (request.body && request.body instanceof Stream.Readable) {
-				request.body.destroy(error);
+				destroyStream(request.body, error);
 			}
 			if (!response || !response.body) return;
 			response.body.emit('error', error);
@@ -6094,8 +6542,42 @@ function fetch(url, opts) {
 
 		req.on('error', function (err) {
 			reject(new FetchError(`request to ${request.url} failed, reason: ${err.message}`, 'system', err));
+
+			if (response && response.body) {
+				destroyStream(response.body, err);
+			}
+
 			finalize();
 		});
+
+		fixResponseChunkedTransferBadEnding(req, function (err) {
+			if (signal && signal.aborted) {
+				return;
+			}
+
+			if (response && response.body) {
+				destroyStream(response.body, err);
+			}
+		});
+
+		/* c8 ignore next 18 */
+		if (parseInt(process.version.substring(1)) < 14) {
+			// Before Node.js 14, pipeline() does not fully support async iterators and does not always
+			// properly handle when the socket close/end events are out of order.
+			req.on('socket', function (s) {
+				s.addListener('close', function (hadError) {
+					// if a data listener is still present we didn't end cleanly
+					const hasDataListener = s.listenerCount('data') > 0;
+
+					// if end happened before close but the socket didn't emit an error, do it now
+					if (response && hasDataListener && !hadError && !(signal && signal.aborted)) {
+						const err = new Error('Premature close');
+						err.code = 'ERR_STREAM_PREMATURE_CLOSE';
+						response.body.emit('error', err);
+					}
+				});
+			});
+		}
 
 		req.on('response', function (res) {
 			clearTimeout(reqTimeout);
@@ -6168,7 +6650,7 @@ function fetch(url, opts) {
 							size: request.size
 						};
 
-						if (!isDomainOrSubdomain(request.url, locationURL)) {
+						if (!isDomainOrSubdomain(request.url, locationURL) || !isSameProtocol(request.url, locationURL)) {
 							for (const name of ['authorization', 'www-authenticate', 'cookie', 'cookie2']) {
 								requestOpts.headers.delete(name);
 							}
@@ -6261,6 +6743,13 @@ function fetch(url, opts) {
 					response = new Response(body, response_options);
 					resolve(response);
 				});
+				raw.on('end', function () {
+					// some old IIS servers return zero-length OK deflate responses, so 'data' is never emitted.
+					if (!response) {
+						response = new Response(body, response_options);
+						resolve(response);
+					}
+				});
 				return;
 			}
 
@@ -6280,6 +6769,41 @@ function fetch(url, opts) {
 		writeToStream(req, request);
 	});
 }
+function fixResponseChunkedTransferBadEnding(request, errorCallback) {
+	let socket;
+
+	request.on('socket', function (s) {
+		socket = s;
+	});
+
+	request.on('response', function (response) {
+		const headers = response.headers;
+
+		if (headers['transfer-encoding'] === 'chunked' && !headers['content-length']) {
+			response.once('close', function (hadError) {
+				// if a data listener is still present we didn't end cleanly
+				const hasDataListener = socket.listenerCount('data') > 0;
+
+				if (hasDataListener && !hadError) {
+					const err = new Error('Premature close');
+					err.code = 'ERR_STREAM_PREMATURE_CLOSE';
+					errorCallback(err);
+				}
+			});
+		}
+	});
+}
+
+function destroyStream(stream, err) {
+	if (stream.destroy) {
+		stream.destroy(err);
+	} else {
+		// node < 8
+		stream.emit('error', err);
+		stream.end();
+	}
+}
+
 /**
  * Redirect code matching
  *
@@ -9681,204 +10205,12 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
-(() => {
-const { inspect } = __nccwpck_require__(3837);
-const { readFileSync, existsSync } = __nccwpck_require__(7147);
-const core = __nccwpck_require__(2186);
-const github = __nccwpck_require__(5438);
-
-const REACTION_TYPES = [
-  "+1",
-  "-1",
-  "laugh",
-  "confused",
-  "heart",
-  "hooray",
-  "rocket",
-  "eyes",
-];
-
-async function addReactions(octokit, repo, comment_id, reactions) {
-  let ReactionsSet = [
-    ...new Set(
-      reactions
-        .replace(/\s/g, "")
-        .split(",")
-        .filter((item) => {
-          if (!REACTION_TYPES.includes(item)) {
-            core.info(`Skipping invalid reaction '${item}'.`);
-            return false;
-          }
-          return true;
-        })
-    ),
-  ];
-
-  if (!ReactionsSet) {
-    core.setFailed(
-      `No valid reactions are contained in '${reactions}'.`
-    );
-    return false;
-  }
-
-  let results = await Promise.allSettled(
-    ReactionsSet.map(async (item) => {
-      await octokit.rest.reactions.createForIssueComment({
-        owner: repo[0],
-        repo: repo[1],
-        comment_id: comment_id,
-        content: item,
-      });
-      core.info(`Setting '${item}' reaction on comment.`);
-    })
-  );
-
-  for (let i = 0, l = results.length; i < l; i++) {
-    if (results[i].status === "fulfilled") {
-      core.info(
-        `Added reaction '${ReactionsSet[i]}' to comment id '${comment_id}'.`
-      );
-    } else if (results[i].status === "rejected") {
-      core.info(
-        `Adding reaction '${ReactionsSet[i]}' to comment id '${comment_id}' failed with ${results[i].reason}.`
-      );
-    }
-  }
-  ReactionsSet = undefined;
-  results = undefined;
-}
-
-function getBody(inputs) {
-  if (inputs.body) {
-    return inputs.body;
-  } else if (inputs.bodyFile) {
-    return readFileSync(inputs.bodyFile, 'utf-8');
-  } else {
-    return '';
-  }
-}
-
-async function run() {
-  try {
-    const inputs = {
-      token: core.getInput("token"),
-      repository: core.getInput("repository"),
-      issueNumber: core.getInput("issue-number"),
-      commentId: core.getInput("comment-id"),
-      body: core.getInput("body"),
-      bodyFile: core.getInput("body-file"),
-      editMode: core.getInput("edit-mode"),
-      reactions: core.getInput("reactions")
-        ? core.getInput("reactions")
-        : core.getInput("reaction-type"),
-    };
-    core.debug(`Inputs: ${inspect(inputs)}`);
-
-    const repository = inputs.repository
-      ? inputs.repository
-      : process.env.GITHUB_REPOSITORY;
-    const repo = repository.split("/");
-    core.debug(`repository: ${repository}`);
-
-    const editMode = inputs.editMode ? inputs.editMode : "append";
-    core.debug(`editMode: ${editMode}`);
-    if (!["append", "replace"].includes(editMode)) {
-      core.setFailed(`Invalid edit-mode '${editMode}'.`);
-      return;
-    }
-
-    if (inputs.bodyFile && inputs.body) {
-      core.setFailed("Only one of 'body' or 'body-file' can be set.");
-      return;
-    }
-
-    if (inputs.bodyFile) {
-      if (!existsSync(inputs.bodyFile)) {
-        core.setFailed(`File '${inputs.bodyFile}' does not exist.`);
-        return;
-      }
-    }
-
-    const body = getBody(inputs);
-
-    const octokit = github.getOctokit(inputs.token);
-
-    if (inputs.commentId) {
-      // Edit a comment
-      if (!body && !inputs.reactions) {
-        core.setFailed("Missing comment 'body', 'body-file', or 'reactions'.");
-        return;
-      }
-
-      if (body) {
-        var commentBody = "";
-        if (editMode == "append") {
-          // Get the comment body
-          const { data: comment } = await octokit.rest.issues.getComment({
-            owner: repo[0],
-            repo: repo[1],
-            comment_id: inputs.commentId,
-          });
-          commentBody = comment.body + "\n";
-        }
-
-        commentBody = commentBody + body;
-        core.debug(`Comment body: ${commentBody}`);
-        await octokit.rest.issues.updateComment({
-          owner: repo[0],
-          repo: repo[1],
-          comment_id: inputs.commentId,
-          body: commentBody,
-        });
-        core.info(`Updated comment id '${inputs.commentId}'.`);
-        core.setOutput("comment-id", inputs.commentId);
-      }
-
-      // Set comment reactions
-      if (inputs.reactions) {
-        await addReactions(octokit, repo, inputs.commentId, inputs.reactions);
-      }
-    } else if (inputs.issueNumber) {
-      // Create a comment
-      if (!body) {
-        core.setFailed("Missing comment 'body' or 'body-file'.");
-        return;
-      }
-
-      const { data: comment } = await octokit.rest.issues.createComment({
-        owner: repo[0],
-        repo: repo[1],
-        issue_number: inputs.issueNumber,
-        body,
-      });
-      core.info(
-        `Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`
-      );
-      core.setOutput("comment-id", comment.id);
-
-      // Set comment reactions
-      if (inputs.reactions) {
-        await addReactions(octokit, repo, comment.id, inputs.reactions);
-      }
-    } else {
-      core.setFailed("Missing either 'issue-number' or 'comment-id'.");
-      return;
-    }
-  } catch (error) {
-    core.debug(inspect(error));
-    core.setFailed(error.message);
-    if (error.message == 'Resource not accessible by integration') {
-      core.error(`See this action's readme for details about this error`);
-    }
-  }
-}
-
-run();
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(3109);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;

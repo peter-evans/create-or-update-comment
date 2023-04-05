@@ -4,15 +4,13 @@
 
 A GitHub action to create or update an issue or pull request comment.
 
-This action was created to help facilitate a GitHub Actions "ChatOps" solution in conjunction with [slash-command-dispatch](https://github.com/peter-evans/slash-command-dispatch) action.
-
 ## Usage
 
 ### Add a comment to an issue or pull request
 
 ```yml
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: 1
           body: |
@@ -28,7 +26,7 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 
 ```yml
       - name: Update comment
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v3
         with:
           comment-id: 557858210
           body: |
@@ -40,10 +38,13 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 
 ```yml
       - name: Add reactions
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v3
         with:
           comment-id: 557858210
-          reactions: heart, hooray, laugh
+          reactions: |
+            heart
+            hooray
+            laugh
 ```
 
 ### Action inputs
@@ -54,10 +55,12 @@ This action was created to help facilitate a GitHub Actions "ChatOps" solution i
 | `repository` | The full name of the repository in which to create or update a comment. | Current repository |
 | `issue-number` | The number of the issue or pull request in which to create a comment. | |
 | `comment-id` | The id of the comment to update. | |
-| `body` | The comment body. Cannot be used in conjunction with `body-file`. | |
-| `body-file` | The path to a file containing the comment body. Cannot be used in conjunction with `body`. | |
+| `body` | The comment body. Cannot be used in conjunction with `body-path`. | |
+| `body-path` | The path to a file containing the comment body. Cannot be used in conjunction with `body`. | |
 | `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
-| `reactions` | A comma separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
+| `append-separator` | The separator to use when appending to an existing comment. (`newline`, `space`, `none`) | `newline` |
+| `reactions` | A comma or newline separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
+| `reactions-edit-mode` | The mode when updating comment reactions, `replace` or `append`. | `append` |
 
 Note: In *public* repositories this action does not work in `pull_request` workflows when triggered by forks.
 Any attempt will be met with the error, `Resource not accessible by integration`.
@@ -70,7 +73,7 @@ Note that in order to read the step output the action step must have an id.
 
 ```yml
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v3
         id: couc
         with:
           issue-number: 1
@@ -95,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add reaction
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v3
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: eyes
@@ -110,7 +113,7 @@ If the find-comment action output `comment-id` returns an empty string, a new co
 If it returns a value, the comment already exists and the content is replaced.
 ```yml
     - name: Find Comment
-      uses: peter-evans/find-comment@v2
+      uses: peter-evans/find-comment@v3
       id: fc
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -118,7 +121,7 @@ If it returns a value, the comment already exists and the content is replaced.
         body-includes: Build output
 
     - name: Create or update comment
-      uses: peter-evans/create-or-update-comment@v2
+      uses: peter-evans/create-or-update-comment@v3
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
@@ -131,7 +134,7 @@ If it returns a value, the comment already exists and the content is replaced.
 If required, the create and update steps can be separated for greater control.
 ```yml
     - name: Find Comment
-      uses: peter-evans/find-comment@v2
+      uses: peter-evans/find-comment@v3
       id: fc
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -140,7 +143,7 @@ If required, the create and update steps can be separated for greater control.
 
     - name: Create comment
       if: steps.fc.outputs.comment-id == ''
-      uses: peter-evans/create-or-update-comment@v2
+      uses: peter-evans/create-or-update-comment@v3
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
@@ -149,7 +152,7 @@ If required, the create and update steps can be separated for greater control.
 
     - name: Update comment
       if: steps.fc.outputs.comment-id != ''
-      uses: peter-evans/create-or-update-comment@v2
+      uses: peter-evans/create-or-update-comment@v3
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         body: |
@@ -161,10 +164,10 @@ If required, the create and update steps can be separated for greater control.
 
 ```yml
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: 1
-          body-file: 'comment-body.md'
+          body-path: 'comment-body.md'
 ```
 
 ### Using a markdown template
@@ -187,7 +190,7 @@ The template is rendered using the [render-template](https://github.com/chuhlomi
             bar: that
 
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: 1
           body: ${{ steps.template.outputs.result }}

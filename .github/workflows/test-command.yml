@@ -45,6 +45,7 @@ jobs:
           body: |
             **Edit:** Some additional info
           reactions: eyes
+          reactions-edit-mode: replace
 
       # Test add reactions
       - name: Add reactions
@@ -53,19 +54,12 @@ jobs:
           comment-id: ${{ steps.couc.outputs.comment-id }}
           reactions: heart, hooray, laugh
 
-      - name: Add reaction
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
-          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          reactions: hooray
-
       # Test create with body from file
       - name: Create comment
         uses: ./
         with:
           issue-number: 1
-          body-file: .github/comment-body.md
+          body-path: .github/comment-body.md
 
       # Test create from template
       - name: Render template
@@ -82,3 +76,10 @@ jobs:
         with:
           issue-number: 1
           body: ${{ steps.template.outputs.result }}
+
+      - name: Add reaction
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          reactions: hooray
