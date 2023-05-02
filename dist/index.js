@@ -130,6 +130,11 @@ function appendSeparatorTo(body, separator) {
 }
 function createComment(octokit, owner, repo, issueNumber, body) {
     return __awaiter(this, void 0, void 0, function* () {
+        // 65536 characters is the maximum allowed for issue comments.
+        if (body.length > 65536) {
+            core.warning(`Comment body is too long. Truncating to 65536 characters.`);
+            body = body.substring(0, 65536);
+        }
         const { data: comment } = yield octokit.rest.issues.createComment({
             owner: owner,
             repo: repo,

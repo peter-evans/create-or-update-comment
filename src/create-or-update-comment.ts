@@ -125,6 +125,12 @@ async function createComment(
   issueNumber: number,
   body: string
 ): Promise<number> {
+  // 65536 characters is the maximum allowed for issue comments.
+  if (body.length > 65536) {
+    core.warning(`Comment body is too long. Truncating to 65536 characters.`)
+    body = body.substring(0, 65536)
+  }
+
   const {data: comment} = await octokit.rest.issues.createComment({
     owner: owner,
     repo: repo,
