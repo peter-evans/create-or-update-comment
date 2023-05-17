@@ -51,7 +51,7 @@ jobs:
       # Test create from template
       - name: Render template
         id: template
-        uses: chuhlomin/render-template@v1.6
+        uses: chuhlomin/render-template@v1.7
         with:
           template: .github/comment-template.md
           vars: |
