@@ -118,9 +118,7 @@ function appendSeparatorTo(body: string, separator: string): string {
   }
 }
 
-function truncateBody(
-  body: string
-) {
+function truncateBody(body: string) {
   // 65536 characters is the maximum allowed for issue comments.
   if (body.length > 65536) {
     core.warning(`Comment body is too long. Truncating to 65536 characters.`)
@@ -136,7 +134,7 @@ async function createComment(
   issueNumber: number,
   body: string
 ): Promise<number> {
-  body = truncateBody(body);
+  body = truncateBody(body)
 
   const {data: comment} = await octokit.rest.issues.createComment({
     owner: owner,
