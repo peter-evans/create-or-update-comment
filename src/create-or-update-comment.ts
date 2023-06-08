@@ -118,6 +118,15 @@ function appendSeparatorTo(body: string, separator: string): string {
   }
 }
 
+function truncateBody(body: string) {
+  // 65536 characters is the maximum allowed for issue comments.
+  if (body.length > 65536) {
+    core.warning(`Comment body is too long. Truncating to 65536 characters.`)
+    return body.substring(0, 65536)
+  }
+  return body
+}
+
 async function createComment(
   octokit,
   owner: string,
@@ -125,11 +134,7 @@ async function createComment(
   issueNumber: number,
   body: string
 ): Promise<number> {
-  // 65536 characters is the maximum allowed for issue comments.
-  if (body.length > 65536) {
-    core.warning(`Comment body is too long. Truncating to 65536 characters.`)
-    body = body.substring(0, 65536)
-  }
+  body = truncateBody(body)
 
   const {data: comment} = await octokit.rest.issues.createComment({
     owner: owner,
@@ -164,7 +169,7 @@ async function updateComment(
         appendSeparator
       )
     }
-    commentBody = commentBody + body
+    commentBody = truncateBody(commentBody + body)
     core.debug(`Comment body: ${commentBody}`)
     await octokit.rest.issues.updateComment({
       owner: owner,
