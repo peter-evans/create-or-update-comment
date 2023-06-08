@@ -128,13 +128,17 @@ function appendSeparatorTo(body, separator) {
             return body;
     }
 }
+function truncateBody(body) {
+    // 65536 characters is the maximum allowed for issue comments.
+    if (body.length > 65536) {
+        core.warning(`Comment body is too long. Truncating to 65536 characters.`);
+        return body.substring(0, 65536);
+    }
+    return body;
+}
 function createComment(octokit, owner, repo, issueNumber, body) {
     return __awaiter(this, void 0, void 0, function* () {
-        // 65536 characters is the maximum allowed for issue comments.
-        if (body.length > 65536) {
-            core.warning(`Comment body is too long. Truncating to 65536 characters.`);
-            body = body.substring(0, 65536);
-        }
+        body = truncateBody(body);
         const { data: comment } = yield octokit.rest.issues.createComment({
             owner: owner,
             repo: repo,
@@ -158,7 +162,7 @@ function updateComment(octokit, owner, repo, commentId, body, editMode, appendSe
                 });
                 commentBody = appendSeparatorTo(comment.body ? comment.body : '', appendSeparator);
             }
-            commentBody = commentBody + body;
+            commentBody = truncateBody(commentBody + body);
             core.debug(`Comment body: ${commentBody}`);
             yield octokit.rest.issues.updateComment({
                 owner: owner,
