@@ -120,10 +120,10 @@ function appendSeparatorTo(body: string, separator: string): string {
 
 function truncateBody(body: string) {
   // 65536 characters is the maximum allowed for issue comments.
-  let truncateWarning = "...*[Comment body truncated]*"
+  const truncateWarning = '...*[Comment body truncated]*'
   if (body.length > 65536) {
     core.warning(`Comment body is too long. Truncating to 65536 characters.`)
-    return body.substring(0, 65536-truncateWarning.length) + truncateWarning
+    return body.substring(0, 65536 - truncateWarning.length) + truncateWarning
   }
   return body
 }
