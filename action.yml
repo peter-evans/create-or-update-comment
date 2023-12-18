@@ -32,7 +32,7 @@ outputs:
   comment-id:
     description: 'The id of the created comment'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
 branding:
   icon: 'message-square'
