@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/peter-evans/create-or-update-comment#readme",
   "dependencies": {
-    "@actions/core": "^1.10.1",
+    "@actions/core": "^1.11.1",
     "@actions/github": "^5.1.1"
   },
   "devDependencies": {
