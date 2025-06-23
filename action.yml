@@ -18,7 +18,7 @@ inputs:
   body-file:
     description: 'Deprecated in favour of `body-path`.'
   edit-mode:
-    description: 'The mode when updating a comment, "replace" or "append".'
+    description: 'The mode when updating a comment, "append", or "replace", or "recreate".'
     default: 'append'
   append-separator:
     description: 'The separator to use when appending to an existing comment. (`newline`, `space`, `none`)'
