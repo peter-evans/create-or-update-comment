@@ -61,6 +61,41 @@ const REACTION_TYPES = [
     'rocket',
     'eyes'
 ];
+function createCommentTag(tag) {
+    return `<!-- comment-tag: ${tag} -->`;
+}
+function extractCommentTag(body) {
+    const match = body.match(/<!-- comment-tag: (.+?) -->/);
+    return match ? match[1] : null;
+}
+function addCommentTagToBody(body, tag) {
+    const commentTag = createCommentTag(tag);
+    return `${commentTag}\n${body}`;
+}
+function findCommentByTag(octokit, owner, repo, issueNumber, tag) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const comments = yield octokit.paginate(octokit.rest.issues.listComments, {
+                owner: owner,
+                repo: repo,
+                issue_number: issueNumber
+            });
+            const targetTag = createCommentTag(tag);
+            for (const comment of comments) {
+                if (comment.body && comment.body.includes(targetTag)) {
+                    core.info(`Found existing comment with tag '${tag}' - comment id '${comment.id}'.`);
+                    return comment.id;
+                }
+            }
+            core.info(`No existing comment found with tag '${tag}'.`);
+            return null;
+        }
+        catch (error) {
+            core.warning(`Failed to search for comments with tag '${tag}': ${utils.getErrorMessage(error)}`);
+            return null;
+        }
+    });
+}
 function getReactionsSet(reactions) {
     const reactionsSet = [
         ...new Set(reactions.filter(item => {
@@ -137,8 +172,11 @@ function truncateBody(body) {
     }
     return body;
 }
-function createComment(octokit, owner, repo, issueNumber, body) {
+function createComment(octokit, owner, repo, issueNumber, body, commentTag) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (commentTag) {
+            body = addCommentTagToBody(body, commentTag);
+        }
         body = truncateBody(body);
         const { data: comment } = yield octokit.rest.issues.createComment({
             owner: owner,
@@ -146,11 +184,14 @@ function createComment(octokit, owner, repo, issueNumber, body) {
             issue_number: issueNumber,
             body
         });
-        core.info(`Created comment id '${comment.id}' on issue '${issueNumber}'.`);
+        const logMessage = commentTag
+            ? `Created comment id '${comment.id}' with tag '${commentTag}' on issue '${issueNumber}'.`
+            : `Created comment id '${comment.id}' on issue '${issueNumber}'.`;
+        core.info(logMessage);
         return comment.id;
     });
 }
-function updateComment(octokit, owner, repo, commentId, body, editMode, appendSeparator) {
+function updateComment(octokit, owner, repo, commentId, body, editMode, appendSeparator, commentTag) {
     return __awaiter(this, void 0, void 0, function* () {
         if (body) {
             let commentBody = '';
@@ -162,6 +203,19 @@ function updateComment(octokit, owner, repo, commentId, body, editMode, appendSe
                     comment_id: commentId
                 });
                 commentBody = appendSeparatorTo(comment.body ? comment.body : '', appendSeparator);
+            }
+            else if (editMode === 'replace' && commentTag) {
+                // For replace mode with comment-tag, preserve the tag
+                const { data: comment } = yield octokit.rest.issues.getComment({
+                    owner: owner,
+                    repo: repo,
+                    comment_id: commentId
+                });
+                const existingTag = extractCommentTag(comment.body || '');
+                if (existingTag === commentTag) {
+                    // Preserve the existing tag
+                    body = addCommentTagToBody(body, commentTag);
+                }
             }
             commentBody = truncateBody(commentBody + body);
             core.debug(`Comment body: ${commentBody}`);
@@ -237,9 +291,27 @@ function createOrUpdateComment(inputs, body) {
     return __awaiter(this, void 0, void 0, function* () {
         const [owner, repo] = inputs.repository.split('/');
         const octokit = github.getOctokit(inputs.token);
-        const commentId = inputs.commentId
-            ? yield updateComment(octokit, owner, repo, inputs.commentId, body, inputs.editMode, inputs.appendSeparator)
-            : yield createComment(octokit, owner, repo, inputs.issueNumber, body);
+        let commentId;
+        if (inputs.commentId) {
+            // Direct update using comment-id (existing behavior)
+            commentId = yield updateComment(octokit, owner, repo, inputs.commentId, body, inputs.editMode, inputs.appendSeparator);
+        }
+        else if (inputs.commentTag) {
+            // Find existing comment by tag or create new one
+            const existingCommentId = yield findCommentByTag(octokit, owner, repo, inputs.issueNumber, inputs.commentTag);
+            if (existingCommentId) {
+                // Update existing comment found by tag
+                commentId = yield updateComment(octokit, owner, repo, existingCommentId, body, inputs.editMode, inputs.appendSeparator, inputs.commentTag);
+            }
+            else {
+                // Create new comment with tag
+                commentId = yield createComment(octokit, owner, repo, inputs.issueNumber, body, inputs.commentTag);
+            }
+        }
+        else {
+            // Create new comment without tag (existing behavior)
+            commentId = yield createComment(octokit, owner, repo, inputs.issueNumber, body);
+        }
         core.setOutput('comment-id', commentId);
         if (inputs.reactions) {
             const reactionsSet = getReactionsSet(inputs.reactions);
@@ -322,6 +394,7 @@ function run() {
                 repository: core.getInput('repository'),
                 issueNumber: Number(core.getInput('issue-number')),
                 commentId: Number(core.getInput('comment-id')),
+                commentTag: core.getInput('comment-tag'),
                 body: core.getInput('body'),
                 bodyPath: core.getInput('body-path') || core.getInput('body-file'),
                 editMode: core.getInput('edit-mode'),
@@ -351,6 +424,14 @@ function run() {
             if (inputs.commentId) {
                 if (!body && !inputs.reactions) {
                     throw new Error("Missing comment 'body', 'body-path', or 'reactions'.");
+                }
+            }
+            else if (inputs.commentTag) {
+                if (!inputs.issueNumber) {
+                    throw new Error("Missing 'issue-number' when using 'comment-tag'.");
+                }
+                if (!body) {
+                    throw new Error("Missing comment 'body' or 'body-path' when using 'comment-tag'.");
                 }
             }
             else if (inputs.issueNumber) {
