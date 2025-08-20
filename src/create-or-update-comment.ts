@@ -8,6 +8,7 @@ export interface Inputs {
   repository: string
   issueNumber: number
   commentId: number
+  commentTag: string
   body: string
   bodyPath: string
   editMode: string
@@ -26,6 +27,52 @@ const REACTION_TYPES = [
   'rocket',
   'eyes'
 ]
+
+function createCommentTag(tag: string): string {
+  // Sanitize the tag to prevent HTML injection
+  const sanitizedTag = tag.replace(/[<>]/g, '').replace(/--/g, '-')
+  return `<!-- comment-tag: ${sanitizedTag} -->`
+}
+
+function extractCommentTag(body: string): string | null {
+  const match = body.match(/<!-- comment-tag: (.+?) -->/)
+  return match ? match[1] : null
+}
+
+function addCommentTagToBody(body: string, tag: string): string {
+  const commentTag = createCommentTag(tag)
+  return `${commentTag}\n${body}`
+}
+
+async function findCommentByTag(
+  octokit,
+  owner: string,
+  repo: string,
+  issueNumber: number,
+  tag: string
+): Promise<number | null> {
+  try {
+    const comments = await octokit.paginate(octokit.rest.issues.listComments, {
+      owner: owner,
+      repo: repo,
+      issue_number: issueNumber
+    })
+
+    const targetTag = createCommentTag(tag)
+    for (const comment of comments) {
+      if (comment.body && comment.body.includes(targetTag)) {
+        core.info(`Found existing comment with tag '${tag}' - comment id '${comment.id}'.`)
+        return comment.id
+      }
+    }
+
+    core.info(`No existing comment found with tag '${tag}'.`)
+    return null
+  } catch (error) {
+    core.warning(`Failed to search for comments with tag '${tag}': ${utils.getErrorMessage(error)}`)
+    return null
+  }
+}
 
 function getReactionsSet(reactions: string[]): string[] {
   const reactionsSet = [
@@ -133,8 +180,13 @@ async function createComment(
   owner: string,
   repo: string,
   issueNumber: number,
-  body: string
+  body: string,
+  commentTag?: string
 ): Promise<number> {
+  if (commentTag) {
+    body = addCommentTagToBody(body, commentTag)
+  }
+  
   body = truncateBody(body)
 
   const {data: comment} = await octokit.rest.issues.createComment({
@@ -143,7 +195,12 @@ async function createComment(
     issue_number: issueNumber,
     body
   })
-  core.info(`Created comment id '${comment.id}' on issue '${issueNumber}'.`)
+  
+  const logMessage = commentTag 
+    ? `Created comment id '${comment.id}' with tag '${commentTag}' on issue '${issueNumber}'.`
+    : `Created comment id '${comment.id}' on issue '${issueNumber}'.`
+  core.info(logMessage)
+  
   return comment.id
 }
 
@@ -154,23 +211,39 @@ async function updateComment(
   commentId: number,
   body: string,
   editMode: string,
-  appendSeparator: string
+  appendSeparator: string,
+  commentTag?: string
 ): Promise<number> {
   if (body) {
     let commentBody = ''
+    
+    // Get the existing comment
+    const {data: comment} = await octokit.rest.issues.getComment({
+      owner: owner,
+      repo: repo,
+      comment_id: commentId
+    })
+    
+    const existingBody = comment.body || ''
+    const existingTag = extractCommentTag(existingBody)
+    
     if (editMode == 'append') {
-      // Get the comment body
-      const {data: comment} = await octokit.rest.issues.getComment({
-        owner: owner,
-        repo: repo,
-        comment_id: commentId
-      })
-      commentBody = appendSeparatorTo(
-        comment.body ? comment.body : '',
-        appendSeparator
-      )
+      // For append mode, preserve existing content as-is
+      // (if we found the comment by tag, the tag is already there)
+      commentBody = appendSeparatorTo(existingBody, appendSeparator) + body
+    } else if (editMode === 'replace') {
+      // For replace mode, replace the content but preserve the tag if it matches
+      if (commentTag && (existingTag === commentTag || !existingTag)) {
+        // Preserve or add the tag
+        body = addCommentTagToBody(body, commentTag)
+      } else if (existingTag && !commentTag) {
+        // If there was an existing tag but no new tag specified, preserve the existing tag
+        body = addCommentTagToBody(body, existingTag)
+      }
+      commentBody = body
     }
-    commentBody = truncateBody(commentBody + body)
+    
+    commentBody = truncateBody(commentBody)
     core.debug(`Comment body: ${commentBody}`)
     await octokit.rest.issues.updateComment({
       owner: owner,
@@ -242,17 +315,56 @@ export async function createOrUpdateComment(
 
   const octokit = github.getOctokit(inputs.token)
 
-  const commentId = inputs.commentId
-    ? await updateComment(
+  let commentId: number
+
+  if (inputs.commentId) {
+    // Direct update using comment-id (existing behavior)
+    commentId = await updateComment(
+      octokit,
+      owner,
+      repo,
+      inputs.commentId,
+      body,
+      inputs.editMode,
+      inputs.appendSeparator
+    )
+  } else if (inputs.commentTag) {
+    // Find existing comment by tag or create new one
+    const existingCommentId = await findCommentByTag(
+      octokit,
+      owner,
+      repo,
+      inputs.issueNumber,
+      inputs.commentTag
+    )
+
+    if (existingCommentId) {
+      // Update existing comment found by tag
+      commentId = await updateComment(
         octokit,
         owner,
         repo,
-        inputs.commentId,
+        existingCommentId,
         body,
         inputs.editMode,
-        inputs.appendSeparator
+        inputs.appendSeparator,
+        inputs.commentTag
       )
-    : await createComment(octokit, owner, repo, inputs.issueNumber, body)
+    } else {
+      // Create new comment with tag
+      commentId = await createComment(
+        octokit,
+        owner,
+        repo,
+        inputs.issueNumber,
+        body,
+        inputs.commentTag
+      )
+    }
+  } else {
+    // Create new comment without tag (existing behavior)
+    commentId = await createComment(octokit, owner, repo, inputs.issueNumber, body)
+  }
 
   core.setOutput('comment-id', commentId)
 
