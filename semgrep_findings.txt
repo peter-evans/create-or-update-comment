@@ -1,0 +1,52 @@
+
+┌──── ○○○ ────┐
+│ Semgrep CLI │
+└─────────────┘
+
+/Users/marius/work/taktile/third-party-actions/create-or-update-comment/.venv/lib/python3.12/site-packages/opentelemetry/instrumentation/dependencies.py:4: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import (
+/Users/marius/work/taktile/third-party-actions/create-or-update-comment/.venv/lib/python3.12/site-packages/glom/matching.py:797: SyntaxWarning: invalid escape sequence '\ '
+  |\ Spec: Or('a', 'e', 'i', 'o', 'u')
+Scanning 28 files (only git-tracked) with 145 Code rules:
+            
+  [4mCODE RULES[0m
+                                                                                                                        
+  Language      Rules   Files          Origin      Rules                                                                
+ ─────────────────────────────        ───────────────────                                                               
+  <multilang>       2      28          Community     145                                                                
+  yaml              7       9                                                                                           
+  ts               16       3                                                                                           
+  python           19       1                                                                                           
+  js               16       1                                                                                           
+                                                                                                                        
+                    
+  [4mSUPPLY CHAIN RULES[0m
+                                                                         
+  💎 Sign in with `semgrep login` and run `semgrep ci` to find dependency
+     vulnerabilities and advanced cross-file findings.                   
+                                                                         
+          
+  [4mPROGRESS[0m
+   
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 0 (0 blocking)
+ • Rules run: 44
+ • Targets scanned: 28
+ • Parsed lines: ~100.0%
+ • Scan skipped: 
+   ◦ Files matching .semgrepignore patterns: 1
+ • Scan was limited to files tracked by git
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 44 rules on 28 files: 0 findings.
+💎 Missed out on 1185 pro rules since you aren't logged in!
+⚡ Supercharge Semgrep OSS when you create a free account at https://sg.run/rules.
+(need more rules? `semgrep login` for additional free Semgrep Registry rules)
+
+
+✨ If Semgrep missed a finding, please send us feedback to let us know!
+   See https://semgrep.dev/docs/reporting-false-negatives/
