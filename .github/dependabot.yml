@@ -3,18 +3,27 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     labels:
       - "dependencies"
-
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"
+    groups:
+      npm:
+        applies-to: version-updates
+        patterns:
+          - "*"
