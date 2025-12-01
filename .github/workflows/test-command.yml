@@ -18,7 +18,7 @@ jobs:
           echo "branch=$branch" >> $GITHUB_OUTPUT
 
       # Checkout the branch to test
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: ${{ steps.vars.outputs.repository }}
           ref: ${{ steps.vars.outputs.branch }}
