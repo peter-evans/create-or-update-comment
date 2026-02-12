@@ -30,7 +30,7 @@ async function run(): Promise<void> {
     }
     core.debug(`Inputs: ${inspect(inputs)}`)
 
-    if (!['append', 'replace'].includes(inputs.editMode)) {
+    if (!['append', 'replace', 'recreate'].includes(inputs.editMode)) {
       throw new Error(`Invalid edit-mode '${inputs.editMode}'.`)
     }
 
