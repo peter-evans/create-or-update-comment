@@ -11,6 +11,8 @@ inputs:
     description: 'The number of the issue or pull request in which to create a comment.'
   comment-id:
     description: 'The id of the comment to update.'
+  comment-tag:
+    description: 'A unique identifier to find and update existing comments. If no matching comment is found, creates a new one.'
   body:
     description: 'The comment body. Cannot be used in conjunction with `body-path`.'
   body-path:

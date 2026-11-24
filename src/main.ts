@@ -21,6 +21,7 @@ async function run(): Promise<void> {
       repository: core.getInput('repository'),
       issueNumber: Number(core.getInput('issue-number')),
       commentId: Number(core.getInput('comment-id')),
+      commentTag: core.getInput('comment-tag'),
       body: core.getInput('body'),
       bodyPath: core.getInput('body-path') || core.getInput('body-file'),
       editMode: core.getInput('edit-mode'),
@@ -59,6 +60,13 @@ async function run(): Promise<void> {
     if (inputs.commentId) {
       if (!body && !inputs.reactions) {
         throw new Error("Missing comment 'body', 'body-path', or 'reactions'.")
+      }
+    } else if (inputs.commentTag) {
+      if (!inputs.issueNumber) {
+        throw new Error("Missing 'issue-number' when using 'comment-tag'.")
+      }
+      if (!body) {
+        throw new Error("Missing comment 'body' or 'body-path' when using 'comment-tag'.")
       }
     } else if (inputs.issueNumber) {
       if (!body) {
