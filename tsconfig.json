@@ -1,16 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
+    "target": "es2022",
+    "module": "preserve",
     "lib": [
-      "es6"
+      "es2022",
+      "dom"
     ],
     "outDir": "./lib",
     "rootDir": "./src",
     "declaration": true,
     "strict": true,
     "noImplicitAny": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "bundler"
   },
   "exclude": ["__test__", "lib", "node_modules"]
 }
