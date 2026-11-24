@@ -151,35 +151,52 @@ async function updateComment(
   octokit,
   owner: string,
   repo: string,
+  issueNumber: number,
   commentId: number,
   body: string,
   editMode: string,
   appendSeparator: string
 ): Promise<number> {
-  if (body) {
-    let commentBody = ''
-    if (editMode == 'append') {
-      // Get the comment body
-      const {data: comment} = await octokit.rest.issues.getComment({
-        owner: owner,
-        repo: repo,
-        comment_id: commentId
-      })
-      commentBody = appendSeparatorTo(
-        comment.body ? comment.body : '',
-        appendSeparator
-      )
-    }
-    commentBody = truncateBody(commentBody + body)
-    core.debug(`Comment body: ${commentBody}`)
-    await octokit.rest.issues.updateComment({
+  if (!body) {
+    return commentId
+  }
+
+  if (editMode == 'recreate') {
+    await octokit.rest.issues.deleteComment({
       owner: owner,
       repo: repo,
-      comment_id: commentId,
-      body: commentBody
+      comment_id: commentId
     })
-    core.info(`Updated comment id '${commentId}'.`)
+    core.info(`Removed comment id '${commentId}'.`)
+
+    return await createComment(octokit, owner, repo, issueNumber, body)
   }
+
+  let commentBody = ''
+  if (editMode == 'append') {
+    // Get the comment body
+    const {data: comment} = await octokit.rest.issues.getComment({
+      owner: owner,
+      repo: repo,
+      comment_id: commentId
+    })
+    commentBody = appendSeparatorTo(
+      comment.body ? comment.body : '',
+      appendSeparator
+    )
+  }
+
+  commentBody = truncateBody(commentBody + body)
+  core.debug(`Comment body: ${commentBody}`)
+
+  await octokit.rest.issues.updateComment({
+    owner: owner,
+    repo: repo,
+    comment_id: commentId,
+    body: commentBody
+  })
+  core.info(`Updated comment id '${commentId}'.`)
+
   return commentId
 }
 
@@ -247,6 +264,7 @@ export async function createOrUpdateComment(
         octokit,
         owner,
         repo,
+        inputs.issueNumber,
         inputs.commentId,
         body,
         inputs.editMode,

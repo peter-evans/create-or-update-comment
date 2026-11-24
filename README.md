@@ -57,7 +57,7 @@ A GitHub action to create or update an issue or pull request comment.
 | `comment-id` | The id of the comment to update. | |
 | `body` | The comment body. Cannot be used in conjunction with `body-path`. | |
 | `body-path` | The path to a file containing the comment body. Cannot be used in conjunction with `body`. | |
-| `edit-mode` | The mode when updating a comment, `replace` or `append`. | `append` |
+| `edit-mode` | The mode when updating a comment, `append`, or `replace`, or `recreate` . | `append` |
 | `append-separator` | The separator to use when appending to an existing comment. (`newline`, `space`, `none`) | `newline` |
 | `reactions` | A comma or newline separated list of reactions to add to the comment. (`+1`, `-1`, `laugh`, `confused`, `heart`, `hooray`, `rocket`, `eyes`) | |
 | `reactions-edit-mode` | The mode when updating comment reactions, `replace` or `append`. | `append` |
